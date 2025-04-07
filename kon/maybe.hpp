@@ -147,9 +147,21 @@ class maybe {
         : maybe(std::in_place, std::forward<U>(other)) {
     }
 
-    constexpr maybe &operator=(nullopt_t) //
-        noexcept(std::is_nothrow_invocable_v<decltype(&maybe::reset)>) {
-        reset();
+    constexpr maybe &operator=(nullopt_t) noexcept(std::is_nothrow_destructible_v<T>)
+        requires is_default_nothing
+    {
+        if (has) {
+            std::destroy_at(std::addressof(val));
+        }
+        has = false;
+        return *this;
+    }
+
+    constexpr maybe &
+        operator=(nullopt_t) noexcept(std::is_nothrow_invocable_v<decltype(&NT::reset), T &>)
+        requires(!is_default_nothing)
+    {
+        NT::reset(val);
         return *this;
     }
 
@@ -174,8 +186,8 @@ class maybe {
     }
 
     constexpr maybe &operator=(const maybe &other) noexcept(
-        std::is_nothrow_invocable_v<decltype(&NT::reset)> && //
-        std::is_nothrow_copy_constructible_v<T> &&           //
+        std::is_nothrow_invocable_v<decltype(&NT::reset), T &> && //
+        std::is_nothrow_copy_constructible_v<T> &&                //
         std::is_nothrow_constructible_v<T>)
         requires(
             !is_default_nothing &&          //
@@ -250,10 +262,22 @@ class maybe {
         has = false;
     }
 
-    constexpr void reset(void) noexcept(std::is_nothrow_invocable_v<decltype(&NT::reset)>)
+    constexpr void reset(void) noexcept(std::is_nothrow_invocable_v<decltype(&NT::reset), T &>)
         requires(!is_default_nothing)
     {
         NT::reset(val);
+    }
+
+    constexpr T &get() & {
+        return val;
+    }
+
+    inline constexpr const T &get() const & {
+        return val;
+    }
+
+    constexpr T &&get() && {
+        return std::move(val);
     }
 
     template <typename... Args>
