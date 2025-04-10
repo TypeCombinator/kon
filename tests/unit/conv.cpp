@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include <kon/base16.hpp>
+#include <kon/conv.hpp>
 
 template <typename T>
 static uint8_t rstring10_to_uint_helper(const std::string_view &str, T &result) {
