@@ -5,9 +5,6 @@
 namespace kon {
 template <typename T>
 uint8_t rstring10_to_general_uint(const char *str, std::size_t str_size, T &result) {
-    // if (str_size == 0) {
-    //     return 0;
-    // }
     const char *str_org = str;
     // Remove zeros.
     for (; str_size > 0; str_size--) {
@@ -18,9 +15,8 @@ uint8_t rstring10_to_general_uint(const char *str, std::size_t str_size, T &resu
     }
     T number = 0;
     constexpr auto max_size = std::numeric_limits<T>::digits10;
-    std::size_t s = (str_size <= max_size) ? str_size : max_size;
     uint8_t c;
-    for (; s > 0; s--) {
+    for (std::size_t s = (str_size <= max_size) ? str_size : max_size; s > 0; s--) {
         c = base16_decode_table[static_cast<uint8_t>(*str)];
         number = number * 10 + c;
         if (c >= 10) {
@@ -39,18 +35,17 @@ uint8_t rstring10_to_general_uint(const char *str, std::size_t str_size, T &resu
         return str - str_org;
     }
     constexpr T max_d10 = std::numeric_limits<T>::max() / 10;
-    constexpr uint8_t max_r10 = std::numeric_limits<T>::max() % 10;
-    if ((number > max_d10) || ((number == max_d10) && (c > max_r10))) { // Overflow?
+    constexpr uint8_t max_m10 = std::numeric_limits<T>::max() % 10;
+    if ((number > max_d10) || ((number == max_d10) && (c > max_m10))) { // Overflow?
         return 0;
     }
-    number = number * 10 + c;
 
     str++;
     str_size -= (max_size + 1);
     if ((str_size != 0) & is_base10(*str)) { // Too many?
         return 0;
     }
-    result = number;
+    result = number * 10 + c;
     return str - str_org;
 }
 
@@ -82,9 +77,8 @@ uint8_t rstring16_to_general_uint(const char *str, std::size_t str_size, T &resu
     }
     T number = 0;
     constexpr auto max_size = sizeof(T) * 2;
-    std::size_t s = (str_size <= max_size) ? str_size : max_size;
     uint8_t c;
-    for (; s > 0; s--) {
+    for (std::size_t s = (str_size <= max_size) ? str_size : max_size; s > 0; s--) {
         c = base16_decode_table[static_cast<uint8_t>(*str)];
         number = (number << 4) + c;
         if (c >= 16) {
