@@ -1,0 +1,204 @@
+#include <catch2/catch_test_macros.hpp>
+#include <kon/base16.hpp>
+
+template <typename T>
+static uint8_t rstring10_to_uint_helper(const std::string_view &str, T &result) {
+    return kon::rstring10_to_uint(str.data(), str.size(), result);
+}
+
+TEST_CASE("rstring10_to_uint", "[rstring10_to_uint]") {
+    SECTION("uint8_t") {
+        uint8_t result;
+
+        REQUIRE(rstring10_to_uint_helper("00", result) == 2);
+        REQUIRE(result == 0);
+
+        REQUIRE(rstring10_to_uint_helper("123", result) == 3);
+        REQUIRE(result == 123);
+
+        REQUIRE(rstring10_to_uint_helper("255", result) == 3);
+        REQUIRE(result == 255);
+
+        REQUIRE(rstring10_to_uint_helper("255a", result) == 3);
+        REQUIRE(result == 255);
+
+        REQUIRE(rstring10_to_uint_helper("", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("a", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("266", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("256", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("2550", result) == 0);
+    }
+
+    SECTION("uint16_t") {
+        uint16_t result;
+
+        REQUIRE(rstring10_to_uint_helper("00", result) == 2);
+        REQUIRE(result == 0);
+
+        REQUIRE(rstring10_to_uint_helper("3333", result) == 4);
+        REQUIRE(result == 3333);
+
+        REQUIRE(rstring10_to_uint_helper("65535", result) == 5);
+        REQUIRE(result == 65535);
+
+        REQUIRE(rstring10_to_uint_helper("65535a", result) == 5);
+        REQUIRE(result == 65535);
+
+        REQUIRE(rstring10_to_uint_helper("", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("a", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("65546", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("65536", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("655350", result) == 0);
+    }
+
+    SECTION("uint32_t") {
+        uint32_t result;
+
+        REQUIRE(rstring10_to_uint_helper("00", result) == 2);
+        REQUIRE(result == 0);
+
+        REQUIRE(rstring10_to_uint_helper("33333333", result) == 8);
+        REQUIRE(result == 33333333);
+
+        REQUIRE(rstring10_to_uint_helper("4294967295", result) == 10);
+        REQUIRE(result == 4294967295);
+
+        REQUIRE(rstring10_to_uint_helper("4294967295a", result) == 10);
+        REQUIRE(result == 4294967295);
+
+        REQUIRE(rstring10_to_uint_helper("", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("a", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("4294967306", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("4294967296", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("42949672950", result) == 0);
+    }
+
+    SECTION("uint64_t") {
+        uint64_t result;
+
+        REQUIRE(rstring10_to_uint_helper("00", result) == 2);
+        REQUIRE(result == 0);
+
+        REQUIRE(rstring10_to_uint_helper("333333333333333", result) == 15);
+        REQUIRE(result == 333333333333333ull);
+
+        REQUIRE(rstring10_to_uint_helper("18446744073709551615", result) == 20);
+        REQUIRE(result == 18446744073709551615ull);
+
+        REQUIRE(rstring10_to_uint_helper("18446744073709551615a", result) == 20);
+        REQUIRE(result == 18446744073709551615ull);
+
+        REQUIRE(rstring10_to_uint_helper("", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("a", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("18446744073709551625", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("18446744073709551616", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("184467440737095516150", result) == 0);
+    }
+}
+
+template <typename T>
+static uint8_t rstring16_to_uint_helper(const std::string_view &str, T &result) {
+    return kon::rstring16_to_uint(str.data(), str.size(), result);
+}
+
+TEST_CASE("rstring16_to_uint", "[rstring16_to_uint]") {
+    SECTION("uint8_t") {
+        uint8_t result;
+
+        REQUIRE(rstring16_to_uint_helper("00", result) == 2);
+        REQUIRE(result == 0);
+
+        REQUIRE(rstring16_to_uint_helper("F", result) == 1);
+        REQUIRE(result == 0xF);
+
+        REQUIRE(rstring16_to_uint_helper("FF", result) == 2);
+        REQUIRE(result == 0xFF);
+
+        REQUIRE(rstring16_to_uint_helper("FFx", result) == 2);
+        REQUIRE(result == 0xFF);
+
+        REQUIRE(rstring10_to_uint_helper("", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("x", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("FF0", result) == 0);
+    }
+
+    SECTION("uint16_t") {
+        uint16_t result;
+
+        REQUIRE(rstring16_to_uint_helper("00", result) == 2);
+        REQUIRE(result == 0);
+
+        REQUIRE(rstring16_to_uint_helper("FFF", result) == 3);
+        REQUIRE(result == 0xFFF);
+
+        REQUIRE(rstring16_to_uint_helper("FFFF", result) == 4);
+        REQUIRE(result == 0xFFFF);
+
+        REQUIRE(rstring16_to_uint_helper("FFFFx", result) == 4);
+        REQUIRE(result == 0xFFFF);
+
+        REQUIRE(rstring10_to_uint_helper("", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("x", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("FFFF0", result) == 0);
+    }
+
+    SECTION("uint32_t") {
+        uint32_t result;
+
+        REQUIRE(rstring16_to_uint_helper("00", result) == 2);
+        REQUIRE(result == 0);
+
+        REQUIRE(rstring16_to_uint_helper("FFFFF", result) == 5);
+        REQUIRE(result == 0xFFFFF);
+
+        REQUIRE(rstring16_to_uint_helper("FFFFFFFF", result) == 8);
+        REQUIRE(result == 0xFFFFFFFF);
+
+        REQUIRE(rstring16_to_uint_helper("FFFFFFFFx", result) == 8);
+        REQUIRE(result == 0xFFFFFFFF);
+
+        REQUIRE(rstring10_to_uint_helper("", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("x", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("FFFFFFFF0", result) == 0);
+    }
+
+    SECTION("uint32_t") {
+        uint32_t result;
+
+        REQUIRE(rstring16_to_uint_helper("00", result) == 2);
+        REQUIRE(result == 0);
+
+        REQUIRE(rstring16_to_uint_helper("FFFFF", result) == 5);
+        REQUIRE(result == 0xFFFFF);
+
+        REQUIRE(rstring16_to_uint_helper("FFFFFFFF", result) == 8);
+        REQUIRE(result == 0xFFFFFFFF);
+
+        REQUIRE(rstring16_to_uint_helper("FFFFFFFFx", result) == 8);
+        REQUIRE(result == 0xFFFFFFFF);
+
+        REQUIRE(rstring10_to_uint_helper("", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("x", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("FFFFFFFF0", result) == 0);
+    }
+
+    SECTION("uint64_t") {
+        uint64_t result;
+
+        REQUIRE(rstring16_to_uint_helper("00", result) == 2);
+        REQUIRE(result == 0);
+
+        REQUIRE(rstring16_to_uint_helper("FFFFFFFFFF", result) == 10);
+        REQUIRE(result == 0xFFFFFFFFFF);
+
+        REQUIRE(rstring16_to_uint_helper("FFFFFFFFFFFFFFFF", result) == 16);
+        REQUIRE(result == 0xFFFFFFFFFFFFFFFF);
+
+        REQUIRE(rstring16_to_uint_helper("FFFFFFFFFFFFFFFFx", result) == 16);
+        REQUIRE(result == 0xFFFFFFFFFFFFFFFF);
+
+        REQUIRE(rstring10_to_uint_helper("", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("x", result) == 0);
+        REQUIRE(rstring10_to_uint_helper("FFFFFFFFFFFFFFFF0", result) == 0);
+    }
+}

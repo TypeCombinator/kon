@@ -1,4 +1,5 @@
 add_executable(kon_tests
+    base16.cpp
     dbuf.cpp
     file_helper.cpp
     maybe.cpp
