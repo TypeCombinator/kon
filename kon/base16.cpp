@@ -1,6 +1,6 @@
 #include <kon/base16.hpp>
-#include <type_traits>
 #include <limits>
+#include <charconv>
 
 namespace kon {
 
@@ -315,8 +315,22 @@ uint8_t string16_to_int(const char *str, std::size_t str_size, int64_t &result) 
     return string16_to_general_int(str, str_size, result);
 }
 
-uint8_t string_to_float(const char *str, std::size_t str_size, float result) {
-    return 0;
+template <typename T>
+uint8_t string_to_general_float(const char *str, std::size_t str_size, T &result) {
+    auto &&ret = std::from_chars(str, str + str_size, result);
+    return (ret.ec == std::errc()) ? (ret.ptr - str) : 0;
+}
+
+uint8_t string_to_float(const char *str, std::size_t str_size, float &result) {
+    return string_to_general_float(str, str_size, result);
+}
+
+uint8_t string_to_float(const char *str, std::size_t str_size, double &result) {
+    return string_to_general_float(str, str_size, result);
+}
+
+uint8_t string_to_float(const char *str, std::size_t str_size, long double &result) {
+    return string_to_general_float(str, str_size, result);
 }
 
 } // namespace kon

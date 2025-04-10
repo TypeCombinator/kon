@@ -46,5 +46,9 @@ uint8_t string16_to_int(const char *str, std::size_t str_size, int16_t &result);
 uint8_t string16_to_int(const char *str, std::size_t str_size, int32_t &result);
 uint8_t string16_to_int(const char *str, std::size_t str_size, int64_t &result);
 
+uint8_t string_to_float(const char *str, std::size_t str_size, float &result);
+uint8_t string_to_float(const char *str, std::size_t str_size, double &result);
+uint8_t string_to_float(const char *str, std::size_t str_size, long double &result);
+
 }; // namespace kon
 #endif /* base16.hpp */

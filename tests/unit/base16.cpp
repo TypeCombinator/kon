@@ -309,3 +309,24 @@ TEST_CASE("string16_to_int", "[string16_to_int]") {
     REQUIRE(string10_to_int_helper("-0x81", result) == 0);
     REQUIRE(string10_to_int_helper("-0x800", result) == 0);
 }
+
+template <typename T>
+static uint8_t string_to_float_helper(const std::string_view &str, T &result) {
+    return kon::string_to_float(str.data(), str.size(), result);
+}
+
+TEST_CASE("string_to_float", "[string_to_float]") {
+    float result;
+
+    REQUIRE(string_to_float_helper("0", result) == 1);
+    REQUIRE(result == 0.0);
+
+    REQUIRE(string_to_float_helper("0.1", result) == 3);
+    REQUIRE(result == 0.1f);
+
+    REQUIRE(string_to_float_helper("-0.1", result) == 4);
+    REQUIRE(result == -0.1f);
+
+    REQUIRE(string_to_float_helper("-3e2", result) == 4);
+    REQUIRE(result == -3e2f);
+}
