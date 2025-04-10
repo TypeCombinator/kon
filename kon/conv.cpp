@@ -303,4 +303,49 @@ uint8_t string_to_float(const char *str, std::size_t str_size, double &result) {
 uint8_t string_to_float(const char *str, std::size_t str_size, long double &result) {
     return string_to_general_float(str, str_size, result);
 }
+
+template <typename T>
+uint8_t string_to_general_uint(const char *str, std::size_t str_size, T &result) {
+    uint8_t pos = string16_to_general_uint(str, str_size, result);
+    return (pos == 0) ? string10_to_general_uint(str, str_size, result) : pos;
+}
+
+uint8_t string_to_uint(const char *str, std::size_t str_size, uint8_t &result) {
+    return string_to_general_uint(str, str_size, result);
+}
+
+uint8_t string_to_uint(const char *str, std::size_t str_size, uint16_t &result) {
+    return string_to_general_uint(str, str_size, result);
+}
+
+uint8_t string_to_uint(const char *str, std::size_t str_size, uint32_t &result) {
+    return string_to_general_uint(str, str_size, result);
+}
+
+uint8_t string_to_uint(const char *str, std::size_t str_size, uint64_t &result) {
+    return string_to_general_uint(str, str_size, result);
+}
+
+template <typename T>
+uint8_t string_to_general_int(const char *str, std::size_t str_size, T &result) {
+    uint8_t pos = string16_to_general_int(str, str_size, result);
+    return (pos == 0) ? string10_to_general_int(str, str_size, result) : pos;
+}
+
+uint8_t string_to_int(const char *str, std::size_t str_size, int8_t &result) {
+    return string_to_general_int(str, str_size, result);
+}
+
+uint8_t string_to_int(const char *str, std::size_t str_size, int16_t &result) {
+    return string_to_general_int(str, str_size, result);
+}
+
+uint8_t string_to_int(const char *str, std::size_t str_size, int32_t &result) {
+    return string_to_general_int(str, str_size, result);
+}
+
+uint8_t string_to_int(const char *str, std::size_t str_size, int64_t &result) {
+    return string_to_general_int(str, str_size, result);
+}
+
 } // namespace kon

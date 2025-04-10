@@ -330,3 +330,84 @@ TEST_CASE("string_to_float", "[string_to_float]") {
     REQUIRE(string_to_float_helper("-3e2", result) == 4);
     REQUIRE(result == -3e2f);
 }
+
+template <typename T>
+static uint8_t string_to_uint_helper(const std::string_view &str, T &result) {
+    return kon::string_to_uint(str.data(), str.size(), result);
+}
+
+TEST_CASE("string_to_uint", "[string_to_uint]") {
+    uint8_t result;
+
+    REQUIRE(string_to_uint_helper("0", result) == 1);
+    REQUIRE(result == 0);
+
+    REQUIRE(string_to_uint_helper("+0", result) == 2);
+    REQUIRE(result == 0);
+
+    REQUIRE(string_to_uint_helper("0x0", result) == 3);
+    REQUIRE(result == 0);
+
+    REQUIRE(string_to_uint_helper("+0x0", result) == 4);
+    REQUIRE(result == 0);
+
+    REQUIRE(string_to_uint_helper("+0x12", result) == 5);
+    REQUIRE(result == 0x12);
+
+    REQUIRE(string_to_uint_helper("+0xFF", result) == 5);
+    REQUIRE(result == 0xFF);
+
+    REQUIRE(string_to_uint_helper("-0", result) == 0);
+    REQUIRE(string_to_uint_helper("-0x", result) == 0);
+}
+
+template <typename T>
+static uint8_t string_to_int_helper(const std::string_view &str, T &result) {
+    return kon::string_to_int(str.data(), str.size(), result);
+}
+
+TEST_CASE("string_to_int", "[string_to_int]") {
+    int8_t result;
+
+    REQUIRE(string_to_int_helper("0", result) == 1);
+    REQUIRE(result == 0);
+
+    REQUIRE(string_to_int_helper("+0", result) == 2);
+    REQUIRE(result == 0);
+
+    REQUIRE(string_to_int_helper("-0", result) == 2);
+    REQUIRE(result == 0);
+
+    REQUIRE(string_to_int_helper("0x0", result) == 3);
+    REQUIRE(result == 0);
+
+    REQUIRE(string_to_int_helper("+0x0", result) == 4);
+    REQUIRE(result == 0);
+
+    REQUIRE(string_to_int_helper("-0x0", result) == 4);
+    REQUIRE(result == 0);
+
+    REQUIRE(string_to_int_helper("127", result) == 3);
+    REQUIRE(result == 127);
+
+    REQUIRE(string_to_int_helper("+127", result) == 4);
+    REQUIRE(result == 127);
+
+    REQUIRE(string_to_int_helper("0x7F", result) == 4);
+    REQUIRE(result == 0x7F);
+
+    REQUIRE(string_to_int_helper("+0x7F", result) == 5);
+    REQUIRE(result == 0x7F);
+
+    REQUIRE(string_to_int_helper("-128", result) == 4);
+    REQUIRE(result == -128);
+
+    REQUIRE(string_to_int_helper("-0x80", result) == 5);
+    REQUIRE(result == -0x80);
+
+    REQUIRE(string_to_int_helper("128", result) == 0);
+    REQUIRE(string_to_int_helper("0x80", result) == 0);
+    REQUIRE(string_to_int_helper("+0x80", result) == 0);
+    REQUIRE(string_to_int_helper("-129", result) == 0);
+    REQUIRE(string_to_int_helper("-0x81", result) == 0);
+}
