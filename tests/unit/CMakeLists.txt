@@ -3,6 +3,7 @@ add_executable(kon_tests
     dbuf.cpp
     file_helper.cpp
     maybe.cpp
+    string_helper.cpp
 )
 
 target_link_libraries(kon_tests PRIVATE
