@@ -1,4 +1,5 @@
 #include <kon/base16.hpp>
+#include <type_traits>
 #include <limits>
 
 namespace kon {
@@ -140,6 +141,182 @@ uint8_t rstring16_to_uint(const char *str, std::size_t str_size, uint32_t &resul
 
 uint8_t rstring16_to_uint(const char *str, std::size_t str_size, uint64_t &result) {
     return rstring16_to_general_uint(str, str_size, result);
+}
+
+template <typename T>
+uint8_t string10_to_general_uint(const char *str, std::size_t str_size, T &result) {
+    if (str_size < 1) {
+        return 0;
+    }
+    uint8_t prefix = (*str == '+') ? 1 : 0;
+    uint8_t pos = rstring10_to_general_uint(str + prefix, str_size - prefix, result);
+    return (pos != 0) ? pos + prefix : 0;
+}
+
+uint8_t string10_to_uint(const char *str, std::size_t str_size, uint8_t &result) {
+    return string10_to_general_uint(str, str_size, result);
+}
+
+uint8_t string10_to_uint(const char *str, std::size_t str_size, uint16_t &result) {
+    return string10_to_general_uint(str, str_size, result);
+}
+
+uint8_t string10_to_uint(const char *str, std::size_t str_size, uint32_t &result) {
+    return string10_to_general_uint(str, str_size, result);
+}
+
+uint8_t string10_to_uint(const char *str, std::size_t str_size, uint64_t &result) {
+    return string10_to_general_uint(str, str_size, result);
+}
+
+template <typename T>
+uint8_t string16_to_general_uint(const char *str, std::size_t str_size, T &result) {
+    if (str_size < 3) {
+        return 0;
+    }
+    const char *str_org = str;
+    uint8_t prefix;
+    if (*str == '+') {
+        str++;
+        prefix = 3;
+    } else {
+        prefix = 2;
+    }
+    char c = str[1];
+    if (*str != '0' || ((c != 'x') && (c != 'X'))) {
+        return 0;
+    }
+    uint8_t pos = rstring16_to_general_uint(str_org + prefix, str_size - prefix, result);
+    return (pos != 0) ? (pos + prefix) : 0;
+}
+
+uint8_t string16_to_uint(const char *str, std::size_t str_size, uint8_t &result) {
+    return string16_to_general_uint(str, str_size, result);
+}
+
+uint8_t string16_to_uint(const char *str, std::size_t str_size, uint16_t &result) {
+    return string16_to_general_uint(str, str_size, result);
+}
+
+uint8_t string16_to_uint(const char *str, std::size_t str_size, uint32_t &result) {
+    return string16_to_general_uint(str, str_size, result);
+}
+
+uint8_t string16_to_uint(const char *str, std::size_t str_size, uint64_t &result) {
+    return string16_to_general_uint(str, str_size, result);
+}
+
+template <typename T>
+uint8_t string10_to_general_int(const char *str, std::size_t str_size, T &result) {
+    if (str_size < 1) {
+        return 0;
+    }
+    uint8_t prefix = 0;
+    char c = *str;
+    bool negative = false;
+    if (c == '-') {
+        prefix = 1;
+        negative = true;
+    } else if (c == '+') {
+        prefix = 1;
+    }
+    using UT = std::make_unsigned_t<T>;
+    UT number;
+    uint8_t pos = rstring10_to_general_uint(str + prefix, str_size - prefix, number);
+    if (pos == 0) {
+        return 0;
+    }
+    if (negative) {
+        if (number > static_cast<UT>(std::numeric_limits<T>::min())) {
+            return 0;
+        }
+        result = -number;
+        return prefix + pos;
+    }
+    if (number > static_cast<UT>(std::numeric_limits<T>::max())) {
+        return 0;
+    }
+    result = number;
+    return prefix + pos;
+}
+
+uint8_t string10_to_int(const char *str, std::size_t str_size, int8_t &result) {
+    return string10_to_general_int(str, str_size, result);
+}
+
+uint8_t string10_to_int(const char *str, std::size_t str_size, int16_t &result) {
+    return string10_to_general_int(str, str_size, result);
+}
+
+uint8_t string10_to_int(const char *str, std::size_t str_size, int32_t &result) {
+    return string10_to_general_int(str, str_size, result);
+}
+
+uint8_t string10_to_int(const char *str, std::size_t str_size, int64_t &result) {
+    return string10_to_general_int(str, str_size, result);
+}
+
+template <typename T>
+uint8_t string16_to_general_int(const char *str, std::size_t str_size, T &result) {
+    if (str_size < 3) {
+        return 0;
+    }
+    const char *str_org = str;
+    uint8_t prefix;
+    bool negative = false;
+    char c = *str;
+    if (c == '-') {
+        str++;
+        prefix = 3;
+        negative = true;
+    } else if (c == '+') {
+        str++;
+        prefix = 3;
+    } else {
+        prefix = 2;
+    }
+    c = str[1];
+    if (*str != '0' || ((c != 'x') && (c != 'X'))) {
+        return 0;
+    }
+    using UT = std::make_unsigned_t<T>;
+    UT number;
+    uint8_t pos = rstring16_to_general_uint(str_org + prefix, str_size - prefix, number);
+    if (pos == 0) {
+        return 0;
+    }
+    if (negative) {
+        if (number > static_cast<UT>(std::numeric_limits<T>::min())) {
+            return 0;
+        }
+        result = -number;
+        return prefix + pos;
+    }
+    if (number > static_cast<UT>(std::numeric_limits<T>::max())) {
+        return 0;
+    }
+    result = number;
+    return prefix + pos;
+}
+
+uint8_t string16_to_int(const char *str, std::size_t str_size, int8_t &result) {
+    return string16_to_general_int(str, str_size, result);
+}
+
+uint8_t string16_to_int(const char *str, std::size_t str_size, int16_t &result) {
+    return string16_to_general_int(str, str_size, result);
+}
+
+uint8_t string16_to_int(const char *str, std::size_t str_size, int32_t &result) {
+    return string16_to_general_int(str, str_size, result);
+}
+
+uint8_t string16_to_int(const char *str, std::size_t str_size, int64_t &result) {
+    return string16_to_general_int(str, str_size, result);
+}
+
+uint8_t string_to_float(const char *str, std::size_t str_size, float result) {
+    return 0;
 }
 
 } // namespace kon

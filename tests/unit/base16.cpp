@@ -202,3 +202,110 @@ TEST_CASE("rstring16_to_uint", "[rstring16_to_uint]") {
         REQUIRE(rstring10_to_uint_helper("FFFFFFFFFFFFFFFF0", result) == 0);
     }
 }
+
+template <typename T>
+static uint8_t string10_to_uint_helper(const std::string_view &str, T &result) {
+    return kon::string10_to_uint(str.data(), str.size(), result);
+}
+
+TEST_CASE("string10_to_uint", "[string10_to_uint]") {
+    uint8_t result;
+
+    REQUIRE(string10_to_uint_helper("00", result) == 2);
+    REQUIRE(result == 0);
+
+    REQUIRE(string10_to_uint_helper("+00", result) == 3);
+    REQUIRE(result == 0);
+
+    REQUIRE(string10_to_uint_helper("+12", result) == 3);
+    REQUIRE(result == 12);
+
+    REQUIRE(string10_to_uint_helper("+", result) == 0);
+}
+
+template <typename T>
+static uint8_t string16_to_uint_helper(const std::string_view &str, T &result) {
+    return kon::string16_to_uint(str.data(), str.size(), result);
+}
+
+TEST_CASE("string16_to_uint", "[string16_to_uint]") {
+    uint8_t result;
+
+    REQUIRE(string16_to_uint_helper("0x0", result) == 3);
+    REQUIRE(result == 0);
+
+    REQUIRE(string16_to_uint_helper("+0x0", result) == 4);
+    REQUIRE(result == 0);
+
+    REQUIRE(string16_to_uint_helper("+0x12", result) == 5);
+    REQUIRE(result == 0x12);
+
+    REQUIRE(string16_to_uint_helper("+0", result) == 0);
+    REQUIRE(string16_to_uint_helper("+0x", result) == 0);
+}
+
+template <typename T>
+static uint8_t string10_to_int_helper(const std::string_view &str, T &result) {
+    return kon::string10_to_int(str.data(), str.size(), result);
+}
+
+TEST_CASE("string10_to_int", "[string10_to_int]") {
+    int8_t result;
+
+    REQUIRE(string10_to_int_helper("00", result) == 2);
+    REQUIRE(result == 0);
+
+    REQUIRE(string10_to_int_helper("-0", result) == 2);
+    REQUIRE(result == 0);
+
+    REQUIRE(string10_to_int_helper("+0", result) == 2);
+    REQUIRE(result == 0);
+
+    REQUIRE(string10_to_int_helper("+127", result) == 4);
+    REQUIRE(result == 127);
+
+    REQUIRE(string10_to_int_helper("127", result) == 3);
+    REQUIRE(result == 127);
+
+    REQUIRE(string10_to_int_helper("-128", result) == 4);
+    REQUIRE(result == -128);
+
+
+    REQUIRE(string10_to_int_helper("-", result) == 0);
+    REQUIRE(string10_to_int_helper("+", result) == 0);
+    REQUIRE(string10_to_int_helper("128", result) == 0);
+    REQUIRE(string10_to_int_helper("1270", result) == 0);
+    REQUIRE(string10_to_int_helper("-129", result) == 0);
+}
+
+template <typename T>
+static uint8_t string16_to_int_helper(const std::string_view &str, T &result) {
+    return kon::string16_to_int(str.data(), str.size(), result);
+}
+
+TEST_CASE("string16_to_int", "[string16_to_int]") {
+    int8_t result;
+
+    REQUIRE(string16_to_int_helper("0x0", result) == 3);
+    REQUIRE(result == 0);
+
+    REQUIRE(string16_to_int_helper("-0x0", result) == 4);
+    REQUIRE(result == 0);
+
+    REQUIRE(string16_to_int_helper("+0x0", result) == 4);
+    REQUIRE(result == 0);
+
+    REQUIRE(string16_to_int_helper("+0xF", result) == 4);
+    REQUIRE(result == 0xF);
+
+    REQUIRE(string16_to_int_helper("-0x80", result) == 5);
+    REQUIRE(result == -0x80);
+
+    REQUIRE(string10_to_int_helper("-", result) == 0);
+    REQUIRE(string10_to_int_helper("+", result) == 0);
+    REQUIRE(string10_to_int_helper("0x", result) == 0);
+    REQUIRE(string10_to_int_helper("+0x", result) == 0);
+    REQUIRE(string10_to_int_helper("0x80", result) == 0);
+    REQUIRE(string10_to_int_helper("-0x81", result) == 0);
+    REQUIRE(string10_to_int_helper("-0x800", result) == 0);
+}
