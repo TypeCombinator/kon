@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 TypeCombinator <typecombinator@foxmail.com>
+#
+# SPDX-License-Identifier: BSD 3-Clause
+
 add_library(kon STATIC
     base16.cpp
     conv.cpp

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 TypeCombinator <typecombinator@foxmail.com>
+//
+// SPDX-License-Identifier: BSD 3-Clause
+
 #ifndef MAYBE_A7E32BA7_D0FF_4CC0_8064_B631927CDE30
 #define MAYBE_A7E32BA7_D0FF_4CC0_8064_B631927CDE30
 
