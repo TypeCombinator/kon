@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include <kon/vlm_queue.hpp>
+#include <kon/vlm_ring.hpp>
 
 namespace vlmq_test {
 struct message0 {
@@ -12,10 +12,10 @@ struct message1 {
 };
 }; // namespace vlmq_test
 
-TEST_CASE("vlm_queue", "[vlm_queue]") {
+TEST_CASE("vlm_ring", "[vlm_ring]") {
     SECTION("basic") {
-        kon::vlm_queue q(30);
-        kon::vlm_queue::message msg;
+        kon::vlm_ring q(30);
+        kon::vlm_ring::message msg;
 
         {
             REQUIRE(q.push_begin(msg, sizeof(vlmq_test::message0)));
@@ -45,8 +45,8 @@ TEST_CASE("vlm_queue", "[vlm_queue]") {
     }
 
     SECTION("basic") {
-        kon::vlm_queue q(30);
-        kon::vlm_queue::message msg;
+        kon::vlm_ring q(30);
+        kon::vlm_ring::message msg;
 
         {
             REQUIRE(q.push_begin(msg, 0));
@@ -66,8 +66,8 @@ TEST_CASE("vlm_queue", "[vlm_queue]") {
     }
 
     SECTION("advanced") {
-        kon::vlm_queue q(32);
-        kon::vlm_queue::message msg;
+        kon::vlm_ring q(32);
+        kon::vlm_ring::message msg;
 
         {
             REQUIRE(q.push_begin(msg, sizeof(vlmq_test::message0)));

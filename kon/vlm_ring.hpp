@@ -1,14 +1,14 @@
 // SPDX-FileCopyrightText: 2025 TypeCombinator <typecombinator@foxmail.com>
 //
 // SPDX-License-Identifier: BSD 3-Clause
-#ifndef VLM_QUEUE_7478D110_0F44_430D_B16E_68E14D85F85C
-#define VLM_QUEUE_7478D110_0F44_430D_B16E_68E14D85F85C
+#ifndef VLM_RING_7478D110_0F44_430D_B16E_68E14D85F85C
+#define VLM_RING_7478D110_0F44_430D_B16E_68E14D85F85C
 #include <atomic>
 #include <cstring>
 
 namespace kon {
 
-class vlm_queue {
+class vlm_ring {
    public:
     static constexpr uint32_t turn_around_message_type = 0xFFFFFFFFu;
 
@@ -22,14 +22,14 @@ class vlm_queue {
         uint8_t* data;
     };
 
-    vlm_queue(std::size_t size)
+    vlm_ring(std::size_t size)
         : buffer(new uint8_t[message_align(size + sizeof(message_head))])
         , windex(0)
         , rindex(0)
         , buffer_size(size) {
     }
 
-    ~vlm_queue() {
+    ~vlm_ring() {
         delete[] buffer;
     }
 
@@ -193,4 +193,4 @@ class vlm_queue {
 };
 } // namespace kon
 
-#endif /* vlm_queue.hpp */
+#endif /* vlm_ring.hpp */
