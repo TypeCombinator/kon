@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: BSD 3-Clause
 #ifndef VLM_QUEUE_7478D110_0F44_430D_B16E_68E14D85F85C
 #define VLM_QUEUE_7478D110_0F44_430D_B16E_68E14D85F85C
-
-#include <new>
-#include <cstdint>
+#include <atomic>
 #include <cstring>
 
 namespace kon {
@@ -40,23 +38,24 @@ class vlm_queue {
         std::size_t rest;
         msg_length = message_align(sizeof(message_head) + msg_length);
 
+        std::size_t wi = windex.load(std::memory_order_acquire);
+        std::size_t ri = rindex.load(std::memory_order_relaxed);
         // |---r----w------rest-------|
-        if (windex >= rindex) {
-            rest = buffer_size - windex;
+        if (wi >= ri) {
+            rest = buffer_size - wi;
             if (rest >= msg_length) {
-                return buffer + windex;
+                return buffer + wi;
             }
-            if (rindex > msg_length) { // Can't be >=, it's ambiguous!
-                (new (buffer + windex) message_head)->type =
-                    turn_around_message_type; // Turn around
+            if (ri > msg_length) { // Can't be >=, it's ambiguous!
+                (new (buffer + wi) message_head)->type = turn_around_message_type; // Turn around
                 return buffer;
             }
             return nullptr;
         }
         // |----w------rest-------r---|
-        rest = rindex - windex;
+        rest = ri - wi;
         if (rest > msg_length) { // Can't be >=, it's ambiguous!
-            return buffer + windex;
+            return buffer + wi;
         }
         return nullptr;
     }
@@ -73,14 +72,17 @@ class vlm_queue {
     }
 
     void push_end(const message_head& msg_head) noexcept {
-        windex = (reinterpret_cast<std::size_t>(&msg_head) - reinterpret_cast<std::size_t>(buffer))
-               + message_align(sizeof(message_head) + msg_head.length);
+        windex.store(
+            (reinterpret_cast<std::size_t>(&msg_head) - reinterpret_cast<std::size_t>(buffer))
+                + message_align(sizeof(message_head) + msg_head.length),
+            std::memory_order_release);
     }
 
     void push_end(const message& msg) noexcept {
         push_end(*msg.head);
     }
 
+    // If the data is a nullptr, it's UB.
     bool push(uint32_t type, const uint8_t* data, uint32_t length) noexcept {
         auto* msg_buffer = push_begin(length);
         if (msg_buffer == nullptr) {
@@ -96,14 +98,30 @@ class vlm_queue {
         return true;
     }
 
+    bool push(uint32_t type) noexcept {
+        auto* msg_buffer = push_begin(0);
+        if (msg_buffer == nullptr) {
+            return false;
+        }
+        auto* head = new (msg_buffer) message_head;
+
+        head->type = type;
+        head->length = 0;
+
+        push_end(*head);
+        return true;
+    }
+
     [[nodiscard]]
     uint8_t* pop_begin() const noexcept {
-        if (windex == rindex) [[unlikely]] {
+        std::size_t ri = rindex.load(std::memory_order_acquire);
+        std::size_t wi = windex.load(std::memory_order_relaxed);
+        if (wi == ri) [[unlikely]] {
             return nullptr;
         }
         auto* head = new (buffer + rindex) message_head;
         if (head->type != turn_around_message_type) [[likely]] { // Not turn-around type?
-            return buffer + rindex;
+            return buffer + ri;
         }
         return buffer; // Turn around
     }
@@ -120,14 +138,17 @@ class vlm_queue {
     }
 
     void pop_end(const message_head& msg_head) noexcept {
-        rindex = (reinterpret_cast<std::size_t>(&msg_head) - reinterpret_cast<std::size_t>(buffer))
-               + message_align(sizeof(message_head) + msg_head.length);
+        rindex.store(
+            (reinterpret_cast<std::size_t>(&msg_head) - reinterpret_cast<std::size_t>(buffer))
+                + message_align(sizeof(message_head) + msg_head.length),
+            std::memory_order_release);
     }
 
     void pop_end(const message& msg) noexcept {
         pop_end(*msg.head);
     }
 
+    // If the data is a nullptr, it's UB.
     bool pop(message_head& msg_head, uint8_t* data, uint32_t length) noexcept {
         auto* msg_buffer = pop_begin();
         if (msg_buffer == nullptr) {
@@ -143,30 +164,30 @@ class vlm_queue {
     }
 
     [[nodiscard]]
-    bool empty() noexcept {
-        return windex == rindex;
+    bool empty(std::memory_order m = std::memory_order_acquire) const noexcept {
+        return windex.load(m) == rindex.load(m);
     }
 
     [[nodiscard]]
-    bool capacity() noexcept {
+    bool capacity() const noexcept {
         return buffer_size;
     }
 
     [[nodiscard]]
-    std::size_t write_index() noexcept {
-        return windex;
+    std::size_t write_index() const noexcept {
+        return windex.load(std::memory_order_relaxed);
     }
 
     [[nodiscard]]
-    std::size_t read_index() noexcept {
-        return rindex;
+    std::size_t read_index() const noexcept {
+        return rindex.load(std::memory_order_relaxed);
     }
    private:
-    uint32_t message_align(uint32_t length) noexcept {
+    static uint32_t message_align(uint32_t length) noexcept {
         return (length + 7) & (~7u);
     }
 
-    std::size_t windex, rindex;
+    std::atomic_size_t windex, rindex;
     size_t buffer_size;
     uint8_t* buffer;
 };
