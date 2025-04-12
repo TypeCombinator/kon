@@ -7,7 +7,9 @@
 #include <cstring>
 
 namespace kon {
-
+// Notice:
+// - SPSC lock-free ring buffer.
+// - Messages are aligned with 8 bytes by default, and larger alignment requires manual processing.
 class vlm_ring {
    public:
     static constexpr uint32_t turn_around_message_type = 0xFFFFFFFFu;

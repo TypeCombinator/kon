@@ -96,7 +96,7 @@ PointerAlignment: Left
 QualifierAlignment: Leave
 ReferenceAlignment: Pointer
 RemoveBracesLLVM: false
-ReflowComments: false
+ReflowComments: true
 RequiresClausePosition: OwnLine
 IndentRequiresClause: true
 SeparateDefinitionBlocks: Always

@@ -1,5 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <kon/vlm_ring.hpp>
+#include <thread>
+#include <vector>
 
 namespace vlmq_test {
 struct message0 {
@@ -137,5 +139,46 @@ TEST_CASE("vlm_ring", "[vlm_ring]") {
             REQUIRE(q.write_index() == 16);
             REQUIRE(q.read_index() == 16);
         }
+    }
+}
+
+TEST_CASE("vlm_ring_multi_thread", "[vlm_ring_multi_thread]") {
+    constexpr uint32_t max_item_num = 300000;
+    kon::vlm_ring q(max_item_num / 10);
+
+    auto producer = [&q]() -> void {
+        for (uint32_t i = 0; i < max_item_num; i++) {
+            while (!q.push(i)) {
+                std::this_thread::yield();
+            }
+        }
+    };
+
+    std::vector<uint32_t> consumer_recorder;
+    consumer_recorder.reserve(max_item_num);
+
+    auto consumer = [&q, &consumer_recorder]() -> void {
+        kon::vlm_ring::message msg;
+        for (uint32_t i = 0; i < max_item_num; i++) {
+            while (!q.pop_begin(msg)) {
+                std::this_thread::yield();
+            }
+            uint32_t type = msg.head->type;
+            q.pop_end(msg);
+
+            consumer_recorder.push_back(type);
+        }
+    };
+    std::thread consumer_thread(consumer);
+    std::thread producer_thread(producer);
+
+    producer_thread.join();
+    consumer_thread.join();
+
+    REQUIRE(consumer_recorder.size() == max_item_num);
+    uint32_t i = 0;
+    for (auto item: consumer_recorder) {
+        REQUIRE(i == item);
+        i++;
     }
 }
