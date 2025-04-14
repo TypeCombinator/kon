@@ -2,7 +2,7 @@
 #include <kon/conv.hpp>
 
 template <typename T>
-static uint8_t rstring10_to_uint_helper(const std::string_view &str, T &result) noexcept {
+static std::size_t rstring10_to_uint_helper(const std::string_view &str, T &result) noexcept {
     return kon::rstring10_to_uint(str.data(), str.size(), result);
 }
 
@@ -97,7 +97,7 @@ TEST_CASE("rstring10_to_uint", "[rstring10_to_uint]") {
 }
 
 template <typename T>
-static uint8_t rstring16_to_uint_helper(const std::string_view &str, T &result) noexcept {
+static std::size_t rstring16_to_uint_helper(const std::string_view &str, T &result) noexcept {
     return kon::rstring16_to_uint(str.data(), str.size(), result);
 }
 
@@ -204,7 +204,7 @@ TEST_CASE("rstring16_to_uint", "[rstring16_to_uint]") {
 }
 
 template <typename T>
-static uint8_t string10_to_uint_helper(const std::string_view &str, T &result) noexcept {
+static std::size_t string10_to_uint_helper(const std::string_view &str, T &result) noexcept {
     return kon::string10_to_uint(str.data(), str.size(), result);
 }
 
@@ -224,7 +224,7 @@ TEST_CASE("string10_to_uint", "[string10_to_uint]") {
 }
 
 template <typename T>
-static uint8_t string16_to_uint_helper(const std::string_view &str, T &result) noexcept {
+static std::size_t string16_to_uint_helper(const std::string_view &str, T &result) noexcept {
     return kon::string16_to_uint(str.data(), str.size(), result);
 }
 
@@ -245,7 +245,7 @@ TEST_CASE("string16_to_uint", "[string16_to_uint]") {
 }
 
 template <typename T>
-static uint8_t string10_to_int_helper(const std::string_view &str, T &result) noexcept {
+static std::size_t string10_to_int_helper(const std::string_view &str, T &result) noexcept {
     return kon::string10_to_int(str.data(), str.size(), result);
 }
 
@@ -279,7 +279,7 @@ TEST_CASE("string10_to_int", "[string10_to_int]") {
 }
 
 template <typename T>
-static uint8_t string16_to_int_helper(const std::string_view &str, T &result) noexcept {
+static std::size_t string16_to_int_helper(const std::string_view &str, T &result) noexcept {
     return kon::string16_to_int(str.data(), str.size(), result);
 }
 
@@ -311,7 +311,7 @@ TEST_CASE("string16_to_int", "[string16_to_int]") {
 }
 
 template <typename T>
-static uint8_t string_to_float_helper(const std::string_view &str, T &result) noexcept {
+static std::size_t string_to_float_helper(const std::string_view &str, T &result) noexcept {
     return kon::string_to_float(str.data(), str.size(), result);
 }
 
@@ -332,7 +332,7 @@ TEST_CASE("string_to_float", "[string_to_float]") {
 }
 
 template <typename T>
-static uint8_t string_to_uint_helper(const std::string_view &str, T &result) noexcept {
+static std::size_t string_to_uint_helper(const std::string_view &str, T &result) noexcept {
     return kon::string_to_uint(str.data(), str.size(), result);
 }
 
@@ -362,7 +362,7 @@ TEST_CASE("string_to_uint", "[string_to_uint]") {
 }
 
 template <typename T>
-static uint8_t string_to_int_helper(const std::string_view &str, T &result) noexcept {
+static std::size_t string_to_int_helper(const std::string_view &str, T &result) noexcept {
     return kon::string_to_int(str.data(), str.size(), result);
 }
 

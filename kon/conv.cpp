@@ -8,7 +8,7 @@
 
 namespace kon {
 template <typename T>
-uint8_t rstring10_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
+std::size_t rstring10_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
     const char *str_org = str;
     // Remove zeros.
     for (; str_size > 0; str_size--) {
@@ -53,24 +53,24 @@ uint8_t rstring10_to_general_uint(const char *str, std::size_t str_size, T &resu
     return str - str_org;
 }
 
-uint8_t rstring10_to_uint(const char *str, std::size_t str_size, uint8_t &result) noexcept {
+std::size_t rstring10_to_uint(const char *str, std::size_t str_size, uint8_t &result) noexcept {
     return rstring10_to_general_uint(str, str_size, result);
 }
 
-uint8_t rstring10_to_uint(const char *str, std::size_t str_size, uint16_t &result) noexcept {
+std::size_t rstring10_to_uint(const char *str, std::size_t str_size, uint16_t &result) noexcept {
     return rstring10_to_general_uint(str, str_size, result);
 }
 
-uint8_t rstring10_to_uint(const char *str, std::size_t str_size, uint32_t &result) noexcept {
+std::size_t rstring10_to_uint(const char *str, std::size_t str_size, uint32_t &result) noexcept {
     return rstring10_to_general_uint(str, str_size, result);
 }
 
-uint8_t rstring10_to_uint(const char *str, std::size_t str_size, uint64_t &result) noexcept {
+std::size_t rstring10_to_uint(const char *str, std::size_t str_size, uint64_t &result) noexcept {
     return rstring10_to_general_uint(str, str_size, result);
 }
 
 template <typename T>
-uint8_t rstring16_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
+std::size_t rstring16_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
     const char *str_org = str;
     // Remove zeros.
     for (; str_size > 0; str_size--) {
@@ -102,50 +102,50 @@ uint8_t rstring16_to_general_uint(const char *str, std::size_t str_size, T &resu
     return str - str_org;
 }
 
-uint8_t rstring16_to_uint(const char *str, std::size_t str_size, uint8_t &result) noexcept {
+std::size_t rstring16_to_uint(const char *str, std::size_t str_size, uint8_t &result) noexcept {
     return rstring16_to_general_uint(str, str_size, result);
 }
 
-uint8_t rstring16_to_uint(const char *str, std::size_t str_size, uint16_t &result) noexcept {
+std::size_t rstring16_to_uint(const char *str, std::size_t str_size, uint16_t &result) noexcept {
     return rstring16_to_general_uint(str, str_size, result);
 }
 
-uint8_t rstring16_to_uint(const char *str, std::size_t str_size, uint32_t &result) noexcept {
+std::size_t rstring16_to_uint(const char *str, std::size_t str_size, uint32_t &result) noexcept {
     return rstring16_to_general_uint(str, str_size, result);
 }
 
-uint8_t rstring16_to_uint(const char *str, std::size_t str_size, uint64_t &result) noexcept {
+std::size_t rstring16_to_uint(const char *str, std::size_t str_size, uint64_t &result) noexcept {
     return rstring16_to_general_uint(str, str_size, result);
 }
 
 template <typename T>
-uint8_t string10_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
+std::size_t string10_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
     if (str_size < 1) {
         return 0;
     }
     uint8_t prefix = (*str == '+') ? 1 : 0;
-    uint8_t pos = rstring10_to_general_uint(str + prefix, str_size - prefix, result);
+    std::size_t pos = rstring10_to_general_uint(str + prefix, str_size - prefix, result);
     return (pos != 0) ? pos + prefix : 0;
 }
 
-uint8_t string10_to_uint(const char *str, std::size_t str_size, uint8_t &result) noexcept {
+std::size_t string10_to_uint(const char *str, std::size_t str_size, uint8_t &result) noexcept {
     return string10_to_general_uint(str, str_size, result);
 }
 
-uint8_t string10_to_uint(const char *str, std::size_t str_size, uint16_t &result) noexcept {
+std::size_t string10_to_uint(const char *str, std::size_t str_size, uint16_t &result) noexcept {
     return string10_to_general_uint(str, str_size, result);
 }
 
-uint8_t string10_to_uint(const char *str, std::size_t str_size, uint32_t &result) noexcept {
+std::size_t string10_to_uint(const char *str, std::size_t str_size, uint32_t &result) noexcept {
     return string10_to_general_uint(str, str_size, result);
 }
 
-uint8_t string10_to_uint(const char *str, std::size_t str_size, uint64_t &result) noexcept {
+std::size_t string10_to_uint(const char *str, std::size_t str_size, uint64_t &result) noexcept {
     return string10_to_general_uint(str, str_size, result);
 }
 
 template <typename T>
-uint8_t string16_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
+std::size_t string16_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
     if (str_size < 3) {
         return 0;
     }
@@ -161,28 +161,28 @@ uint8_t string16_to_general_uint(const char *str, std::size_t str_size, T &resul
     if (*str != '0' || ((c != 'x') && (c != 'X'))) {
         return 0;
     }
-    uint8_t pos = rstring16_to_general_uint(str_org + prefix, str_size - prefix, result);
+    std::size_t pos = rstring16_to_general_uint(str_org + prefix, str_size - prefix, result);
     return (pos != 0) ? (pos + prefix) : 0;
 }
 
-uint8_t string16_to_uint(const char *str, std::size_t str_size, uint8_t &result) noexcept {
+std::size_t string16_to_uint(const char *str, std::size_t str_size, uint8_t &result) noexcept {
     return string16_to_general_uint(str, str_size, result);
 }
 
-uint8_t string16_to_uint(const char *str, std::size_t str_size, uint16_t &result) noexcept {
+std::size_t string16_to_uint(const char *str, std::size_t str_size, uint16_t &result) noexcept {
     return string16_to_general_uint(str, str_size, result);
 }
 
-uint8_t string16_to_uint(const char *str, std::size_t str_size, uint32_t &result) noexcept {
+std::size_t string16_to_uint(const char *str, std::size_t str_size, uint32_t &result) noexcept {
     return string16_to_general_uint(str, str_size, result);
 }
 
-uint8_t string16_to_uint(const char *str, std::size_t str_size, uint64_t &result) noexcept {
+std::size_t string16_to_uint(const char *str, std::size_t str_size, uint64_t &result) noexcept {
     return string16_to_general_uint(str, str_size, result);
 }
 
 template <typename T>
-uint8_t string10_to_general_int(const char *str, std::size_t str_size, T &result) noexcept {
+std::size_t string10_to_general_int(const char *str, std::size_t str_size, T &result) noexcept {
     if (str_size < 1) {
         return 0;
     }
@@ -197,7 +197,7 @@ uint8_t string10_to_general_int(const char *str, std::size_t str_size, T &result
     }
     using UT = std::make_unsigned_t<T>;
     UT number;
-    uint8_t pos = rstring10_to_general_uint(str + prefix, str_size - prefix, number);
+    std::size_t pos = rstring10_to_general_uint(str + prefix, str_size - prefix, number);
     if (pos == 0) {
         return 0;
     }
@@ -215,24 +215,24 @@ uint8_t string10_to_general_int(const char *str, std::size_t str_size, T &result
     return prefix + pos;
 }
 
-uint8_t string10_to_int(const char *str, std::size_t str_size, int8_t &result) noexcept {
+std::size_t string10_to_int(const char *str, std::size_t str_size, int8_t &result) noexcept {
     return string10_to_general_int(str, str_size, result);
 }
 
-uint8_t string10_to_int(const char *str, std::size_t str_size, int16_t &result) noexcept {
+std::size_t string10_to_int(const char *str, std::size_t str_size, int16_t &result) noexcept {
     return string10_to_general_int(str, str_size, result);
 }
 
-uint8_t string10_to_int(const char *str, std::size_t str_size, int32_t &result) noexcept {
+std::size_t string10_to_int(const char *str, std::size_t str_size, int32_t &result) noexcept {
     return string10_to_general_int(str, str_size, result);
 }
 
-uint8_t string10_to_int(const char *str, std::size_t str_size, int64_t &result) noexcept {
+std::size_t string10_to_int(const char *str, std::size_t str_size, int64_t &result) noexcept {
     return string10_to_general_int(str, str_size, result);
 }
 
 template <typename T>
-uint8_t string16_to_general_int(const char *str, std::size_t str_size, T &result) noexcept {
+std::size_t string16_to_general_int(const char *str, std::size_t str_size, T &result) noexcept {
     if (str_size < 3) {
         return 0;
     }
@@ -256,7 +256,7 @@ uint8_t string16_to_general_int(const char *str, std::size_t str_size, T &result
     }
     using UT = std::make_unsigned_t<T>;
     UT number;
-    uint8_t pos = rstring16_to_general_uint(str_org + prefix, str_size - prefix, number);
+    std::size_t pos = rstring16_to_general_uint(str_org + prefix, str_size - prefix, number);
     if (pos == 0) {
         return 0;
     }
@@ -274,81 +274,81 @@ uint8_t string16_to_general_int(const char *str, std::size_t str_size, T &result
     return prefix + pos;
 }
 
-uint8_t string16_to_int(const char *str, std::size_t str_size, int8_t &result) noexcept {
+std::size_t string16_to_int(const char *str, std::size_t str_size, int8_t &result) noexcept {
     return string16_to_general_int(str, str_size, result);
 }
 
-uint8_t string16_to_int(const char *str, std::size_t str_size, int16_t &result) noexcept {
+std::size_t string16_to_int(const char *str, std::size_t str_size, int16_t &result) noexcept {
     return string16_to_general_int(str, str_size, result);
 }
 
-uint8_t string16_to_int(const char *str, std::size_t str_size, int32_t &result) noexcept {
+std::size_t string16_to_int(const char *str, std::size_t str_size, int32_t &result) noexcept {
     return string16_to_general_int(str, str_size, result);
 }
 
-uint8_t string16_to_int(const char *str, std::size_t str_size, int64_t &result) noexcept {
+std::size_t string16_to_int(const char *str, std::size_t str_size, int64_t &result) noexcept {
     return string16_to_general_int(str, str_size, result);
 }
 
 template <typename T>
-uint8_t string_to_general_float(const char *str, std::size_t str_size, T &result) noexcept {
+std::size_t string_to_general_float(const char *str, std::size_t str_size, T &result) noexcept {
     auto &&ret = std::from_chars(str, str + str_size, result);
     return (ret.ec == std::errc()) ? (ret.ptr - str) : 0;
 }
 
-uint8_t string_to_float(const char *str, std::size_t str_size, float &result) noexcept {
+std::size_t string_to_float(const char *str, std::size_t str_size, float &result) noexcept {
     return string_to_general_float(str, str_size, result);
 }
 
-uint8_t string_to_float(const char *str, std::size_t str_size, double &result) noexcept {
+std::size_t string_to_float(const char *str, std::size_t str_size, double &result) noexcept {
     return string_to_general_float(str, str_size, result);
 }
 
-uint8_t string_to_float(const char *str, std::size_t str_size, long double &result) noexcept {
+std::size_t string_to_float(const char *str, std::size_t str_size, long double &result) noexcept {
     return string_to_general_float(str, str_size, result);
 }
 
 template <typename T>
-uint8_t string_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
-    uint8_t pos = string16_to_general_uint(str, str_size, result);
+std::size_t string_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
+    std::size_t pos = string16_to_general_uint(str, str_size, result);
     return (pos == 0) ? string10_to_general_uint(str, str_size, result) : pos;
 }
 
-uint8_t string_to_uint(const char *str, std::size_t str_size, uint8_t &result) noexcept {
+std::size_t string_to_uint(const char *str, std::size_t str_size, uint8_t &result) noexcept {
     return string_to_general_uint(str, str_size, result);
 }
 
-uint8_t string_to_uint(const char *str, std::size_t str_size, uint16_t &result) noexcept {
+std::size_t string_to_uint(const char *str, std::size_t str_size, uint16_t &result) noexcept {
     return string_to_general_uint(str, str_size, result);
 }
 
-uint8_t string_to_uint(const char *str, std::size_t str_size, uint32_t &result) noexcept {
+std::size_t string_to_uint(const char *str, std::size_t str_size, uint32_t &result) noexcept {
     return string_to_general_uint(str, str_size, result);
 }
 
-uint8_t string_to_uint(const char *str, std::size_t str_size, uint64_t &result) noexcept {
+std::size_t string_to_uint(const char *str, std::size_t str_size, uint64_t &result) noexcept {
     return string_to_general_uint(str, str_size, result);
 }
 
 template <typename T>
-uint8_t string_to_general_int(const char *str, std::size_t str_size, T &result) noexcept {
-    uint8_t pos = string16_to_general_int(str, str_size, result);
+std::size_t string_to_general_int(const char *str, std::size_t str_size, T &result) noexcept {
+    std::size_t pos = string16_to_general_int(str, str_size, result);
     return (pos == 0) ? string10_to_general_int(str, str_size, result) : pos;
 }
 
-uint8_t string_to_int(const char *str, std::size_t str_size, int8_t &result) noexcept {
+std::size_t string_to_int(const char *str, std::size_t str_size, int8_t &result) noexcept {
     return string_to_general_int(str, str_size, result);
 }
 
-uint8_t string_to_int(const char *str, std::size_t str_size, int16_t &result) noexcept {
+std::size_t string_to_int(const char *str, std::size_t str_size, int16_t &result) noexcept {
     return string_to_general_int(str, str_size, result);
 }
 
-uint8_t string_to_int(const char *str, std::size_t str_size, int32_t &result) noexcept {
+std::size_t string_to_int(const char *str, std::size_t str_size, int32_t &result) noexcept {
     return string_to_general_int(str, str_size, result);
 }
 
-uint8_t string_to_int(const char *str, std::size_t str_size, int64_t &result) noexcept {
+std::size_t string_to_int(const char *str, std::size_t str_size, int64_t &result) noexcept {
     return string_to_general_int(str, str_size, result);
 }
 
