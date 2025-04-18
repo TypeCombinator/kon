@@ -19,7 +19,7 @@ class vlm_ring {
         uint32_t length;
     };
 
-    struct message {
+    struct zc_scope {
         struct message_head* head;
         uint8_t* data;
     };
@@ -63,13 +63,13 @@ class vlm_ring {
     }
 
     [[nodiscard]]
-    bool push_begin(message& msg, uint32_t msg_length) noexcept {
+    bool push_begin(zc_scope& zcs, uint32_t msg_length) noexcept {
         auto* msg_buffer = push_begin(msg_length);
         if (msg_buffer == nullptr) {
             return false;
         }
-        msg.head = new (msg_buffer) message_head;
-        msg.data = msg_buffer + sizeof(message_head);
+        zcs.head = new (msg_buffer) message_head;
+        zcs.data = msg_buffer + sizeof(message_head);
         return true;
     }
 
@@ -80,8 +80,8 @@ class vlm_ring {
             std::memory_order_release);
     }
 
-    void push_end(const message& msg) noexcept {
-        push_end(*msg.head);
+    void push_end(const zc_scope& zcs) noexcept {
+        push_end(*zcs.head);
     }
 
     // If the data is a nullptr, it's UB.
@@ -129,13 +129,13 @@ class vlm_ring {
     }
 
     [[nodiscard]]
-    bool pop_begin(message& msg) noexcept {
+    bool pop_begin(zc_scope& zcs) noexcept {
         auto* msg_buffer = pop_begin();
         if (msg_buffer == nullptr) {
             return false;
         }
-        msg.head = new (msg_buffer) message_head;
-        msg.data = msg_buffer + sizeof(message_head);
+        zcs.head = new (msg_buffer) message_head;
+        zcs.data = msg_buffer + sizeof(message_head);
         return true;
     }
 
@@ -146,8 +146,8 @@ class vlm_ring {
             std::memory_order_release);
     }
 
-    void pop_end(const message& msg) noexcept {
-        pop_end(*msg.head);
+    void pop_end(const zc_scope& zcs) noexcept {
+        pop_end(*zcs.head);
     }
 
     // If the data is a nullptr, it's UB.
