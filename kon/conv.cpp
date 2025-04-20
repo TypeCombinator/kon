@@ -23,7 +23,7 @@ static inline std::size_t
     constexpr auto max_size = std::numeric_limits<T>::digits10;
     uint8_t c;
     for (std::size_t s = (str_size <= max_size) ? str_size : max_size; s > 0; s--) {
-        c = base16_decode_table[static_cast<uint8_t>(*str)];
+        c = base10_char_decode(*str);
         if (c >= 10) [[unlikely]] {
             result = number;
             return str - str_org;
@@ -35,7 +35,7 @@ static inline std::size_t
         result = number;
         return str - str_org;
     } // else if (str_size > max_size)
-    c = base16_decode_table[static_cast<uint8_t>(*str)];
+    c = base10_char_decode(*str);
     if (c >= 10) [[unlikely]] {
         result = number;
         return str - str_org;
@@ -46,7 +46,7 @@ static inline std::size_t
 
     str++;
     str_size -= (max_size + 1);
-    if ((str_size != 0) & is_base10(*str)) [[unlikely]] { // Too many?
+    if ((str_size != 0) && is_base10_char(*str)) [[unlikely]] { // Too many?
         return 0;
     }
     result = number * 10 + c;

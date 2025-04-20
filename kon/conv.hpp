@@ -10,10 +10,6 @@ namespace kon {
 
 extern const uint8_t base16_decode_table[256];
 
-static inline bool is_base10(char c) noexcept {
-    return base16_decode_table[static_cast<uint8_t>(c)] < 10;
-}
-
 static inline bool is_base16(char c) noexcept {
     return base16_decode_table[static_cast<uint8_t>(c)] < 16;
 }
