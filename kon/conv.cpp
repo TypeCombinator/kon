@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: BSD 3-Clause
 
 #include <kon/conv.hpp>
+#include <kon/base10.hpp>
 #include <limits>
 #include <charconv>
 
@@ -39,15 +40,13 @@ static inline std::size_t
         result = number;
         return str - str_org;
     }
-    constexpr T max_d10 = std::numeric_limits<T>::max() / 10;
-    constexpr uint8_t max_m10 = std::numeric_limits<T>::max() % 10;
-    if ((number > max_d10) || ((number == max_d10) && (c > max_m10))) { // Overflow?
+    if (number > devide10_limit_lut<T, std::numeric_limits<T>::max()>[c]) [[unlikely]] {
         return 0;
     }
 
     str++;
     str_size -= (max_size + 1);
-    if ((str_size != 0) & is_base10(*str)) { // Too many?
+    if ((str_size != 0) & is_base10(*str)) [[unlikely]] { // Too many?
         return 0;
     }
     result = number * 10 + c;
