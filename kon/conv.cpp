@@ -14,7 +14,7 @@ static inline std::size_t
     const char *str_org = str;
     // Remove zeros.
     for (; str_size > 0; str_size--) {
-        if (*str != '0') {
+        if (*str != '0') [[likely]] {
             break;
         }
         str++;
@@ -24,19 +24,19 @@ static inline std::size_t
     uint8_t c;
     for (std::size_t s = (str_size <= max_size) ? str_size : max_size; s > 0; s--) {
         c = base16_decode_table[static_cast<uint8_t>(*str)];
-        if (c >= 10) {
+        if (c >= 10) [[unlikely]] {
             result = number;
             return str - str_org;
         }
         number = number * 10 + c;
         str++;
     }
-    if (str_size <= max_size) {
+    if (str_size <= max_size) [[likely]] {
         result = number;
         return str - str_org;
     } // else if (str_size > max_size)
     c = base16_decode_table[static_cast<uint8_t>(*str)];
-    if (c >= 10) {
+    if (c >= 10) [[unlikely]] {
         result = number;
         return str - str_org;
     }
@@ -75,7 +75,7 @@ static inline std::size_t
     const char *str_org = str;
     // Remove zeros.
     for (; str_size > 0; str_size--) {
-        if (*str != '0') {
+        if (*str != '0') [[likely]] {
             break;
         }
         str++;
@@ -85,18 +85,18 @@ static inline std::size_t
     uint8_t c;
     for (std::size_t s = (str_size <= max_size) ? str_size : max_size; s > 0; s--) {
         c = base16_decode_table[static_cast<uint8_t>(*str)];
-        if (c >= 16) {
+        if (c >= 16) [[unlikely]] {
             result = number;
             return str - str_org;
         }
         number = (number << 4) + c;
         str++;
     }
-    if (str_size <= max_size) {
+    if (str_size <= max_size) [[likely]] {
         result = number;
         return str - str_org;
     } // else if (str_size > max_size)
-    if (is_base16(*str)) { // Too many?
+    if (is_base16(*str)) [[unlikely]] { // Too many?
         return 0;
     }
     result = number;
@@ -120,8 +120,9 @@ std::size_t rstring16_to_uint(const char *str, std::size_t str_size, uint64_t &r
 }
 
 template <typename T>
-std::size_t string10_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
-    if (str_size < 1) {
+static inline std::size_t
+    string10_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
+    if (str_size < 1) [[unlikely]] {
         return 0;
     }
     uint8_t prefix = (*str == '+') ? 1 : 0;
@@ -146,8 +147,9 @@ std::size_t string10_to_uint(const char *str, std::size_t str_size, uint64_t &re
 }
 
 template <typename T>
-std::size_t string16_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
-    if (str_size < 3) {
+static std::size_t
+    string16_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
+    if (str_size < 3) [[unlikely]] {
         return 0;
     }
     const char *str_org = str;
@@ -159,7 +161,7 @@ std::size_t string16_to_general_uint(const char *str, std::size_t str_size, T &r
         prefix = 2;
     }
     char c = str[1];
-    if (*str != '0' || ((c != 'x') && (c != 'X'))) {
+    if (*str != '0' || ((c != 'x') && (c != 'X'))) [[unlikely]] {
         return 0;
     }
     std::size_t pos = rstring16_to_general_uint(str_org + prefix, str_size - prefix, result);
@@ -183,8 +185,9 @@ std::size_t string16_to_uint(const char *str, std::size_t str_size, uint64_t &re
 }
 
 template <typename T>
-std::size_t string10_to_general_int(const char *str, std::size_t str_size, T &result) noexcept {
-    if (str_size < 1) {
+static inline std::size_t
+    string10_to_general_int(const char *str, std::size_t str_size, T &result) noexcept {
+    if (str_size < 1) [[unlikely]] {
         return 0;
     }
     uint8_t prefix = 0;
@@ -199,17 +202,17 @@ std::size_t string10_to_general_int(const char *str, std::size_t str_size, T &re
     using UT = std::make_unsigned_t<T>;
     UT number;
     std::size_t pos = rstring10_to_general_uint(str + prefix, str_size - prefix, number);
-    if (pos == 0) {
+    if (pos == 0) [[unlikely]] {
         return 0;
     }
     if (negative) {
-        if (number > static_cast<UT>(std::numeric_limits<T>::min())) {
+        if (number > static_cast<UT>(std::numeric_limits<T>::min())) [[unlikely]] {
             return 0;
         }
         result = -number;
         return prefix + pos;
     }
-    if (number > static_cast<UT>(std::numeric_limits<T>::max())) {
+    if (number > static_cast<UT>(std::numeric_limits<T>::max())) [[unlikely]] {
         return 0;
     }
     result = number;
@@ -233,8 +236,9 @@ std::size_t string10_to_int(const char *str, std::size_t str_size, int64_t &resu
 }
 
 template <typename T>
-std::size_t string16_to_general_int(const char *str, std::size_t str_size, T &result) noexcept {
-    if (str_size < 3) {
+static inline std::size_t
+    string16_to_general_int(const char *str, std::size_t str_size, T &result) noexcept {
+    if (str_size < 3) [[unlikely]] {
         return 0;
     }
     const char *str_org = str;
@@ -252,23 +256,23 @@ std::size_t string16_to_general_int(const char *str, std::size_t str_size, T &re
         prefix = 2;
     }
     c = str[1];
-    if (*str != '0' || ((c != 'x') && (c != 'X'))) {
+    if (*str != '0' || ((c != 'x') && (c != 'X'))) [[unlikely]] {
         return 0;
     }
     using UT = std::make_unsigned_t<T>;
     UT number;
     std::size_t pos = rstring16_to_general_uint(str_org + prefix, str_size - prefix, number);
-    if (pos == 0) {
+    if (pos == 0) [[unlikely]] {
         return 0;
     }
     if (negative) {
-        if (number > static_cast<UT>(std::numeric_limits<T>::min())) {
+        if (number > static_cast<UT>(std::numeric_limits<T>::min())) [[unlikely]] {
             return 0;
         }
         result = -number;
         return prefix + pos;
     }
-    if (number > static_cast<UT>(std::numeric_limits<T>::max())) {
+    if (number > static_cast<UT>(std::numeric_limits<T>::max())) [[unlikely]] {
         return 0;
     }
     result = number;
@@ -325,14 +329,14 @@ static inline std::size_t
         if (*str == '0' && ((c == 'x') || (c == 'X'))) {
             str += 2;
             std::size_t pos = rstring16_to_general_uint(str, str_size - 2, result);
-            if (pos == 0) {
+            if (pos == 0) [[unlikely]] {
                 return 0;
             }
             return (str - str_org) + pos;
         }
     }
     std::size_t pos = rstring10_to_general_uint(str, str_size, result);
-    if (pos == 0) {
+    if (pos == 0) [[unlikely]] {
         return 0;
     }
     return (str - str_org) + pos;
@@ -377,17 +381,17 @@ static inline std::size_t
         if (*str == '0' && ((c == 'x') || (c == 'X'))) {
             str += 2;
             std::size_t pos = rstring16_to_general_uint(str, str_size - 2, number);
-            if (pos == 0) {
+            if (pos == 0) [[unlikely]] {
                 return 0;
             }
             if (negative) {
-                if (number > static_cast<UT>(std::numeric_limits<T>::min())) {
+                if (number > static_cast<UT>(std::numeric_limits<T>::min())) [[unlikely]] {
                     return 0;
                 }
                 result = -number;
                 return (str - str_org) + pos;
             }
-            if (number > static_cast<UT>(std::numeric_limits<T>::max())) {
+            if (number > static_cast<UT>(std::numeric_limits<T>::max())) [[unlikely]] {
                 return 0;
             }
             result = number;
@@ -399,13 +403,13 @@ static inline std::size_t
         return 0;
     }
     if (negative) {
-        if (number > static_cast<UT>(std::numeric_limits<T>::min())) {
+        if (number > static_cast<UT>(std::numeric_limits<T>::min())) [[unlikely]] {
             return 0;
         }
         result = -number;
         return (str - str_org) + pos;
     }
-    if (number > static_cast<UT>(std::numeric_limits<T>::max())) {
+    if (number > static_cast<UT>(std::numeric_limits<T>::max())) [[unlikely]] {
         return 0;
     }
     result = number;
