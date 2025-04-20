@@ -13,6 +13,9 @@ TEST_CASE("rstring10_to_uint", "[rstring10_to_uint]") {
         REQUIRE(rstring10_to_uint_helper("00", result) == 2);
         REQUIRE(result == 0);
 
+        REQUIRE(rstring10_to_uint_helper("01a", result) == 2);
+        REQUIRE(result == 1);
+
         REQUIRE(rstring10_to_uint_helper("123", result) == 3);
         REQUIRE(result == 123);
 
@@ -34,6 +37,9 @@ TEST_CASE("rstring10_to_uint", "[rstring10_to_uint]") {
 
         REQUIRE(rstring10_to_uint_helper("00", result) == 2);
         REQUIRE(result == 0);
+
+        REQUIRE(rstring10_to_uint_helper("01a", result) == 2);
+        REQUIRE(result == 1);
 
         REQUIRE(rstring10_to_uint_helper("3333", result) == 4);
         REQUIRE(result == 3333);
@@ -57,6 +63,9 @@ TEST_CASE("rstring10_to_uint", "[rstring10_to_uint]") {
         REQUIRE(rstring10_to_uint_helper("00", result) == 2);
         REQUIRE(result == 0);
 
+        REQUIRE(rstring10_to_uint_helper("01a", result) == 2);
+        REQUIRE(result == 1);
+
         REQUIRE(rstring10_to_uint_helper("33333333", result) == 8);
         REQUIRE(result == 33333333);
 
@@ -78,6 +87,9 @@ TEST_CASE("rstring10_to_uint", "[rstring10_to_uint]") {
 
         REQUIRE(rstring10_to_uint_helper("00", result) == 2);
         REQUIRE(result == 0);
+
+        REQUIRE(rstring10_to_uint_helper("01a", result) == 2);
+        REQUIRE(result == 1);
 
         REQUIRE(rstring10_to_uint_helper("333333333333333", result) == 15);
         REQUIRE(result == 333333333333333ull);
@@ -301,13 +313,13 @@ TEST_CASE("string16_to_int", "[string16_to_int]") {
     REQUIRE(string16_to_int_helper("-0x80", result) == 5);
     REQUIRE(result == -0x80);
 
-    REQUIRE(string10_to_int_helper("-", result) == 0);
-    REQUIRE(string10_to_int_helper("+", result) == 0);
-    REQUIRE(string10_to_int_helper("0x", result) == 0);
-    REQUIRE(string10_to_int_helper("+0x", result) == 0);
-    REQUIRE(string10_to_int_helper("0x80", result) == 0);
-    REQUIRE(string10_to_int_helper("-0x81", result) == 0);
-    REQUIRE(string10_to_int_helper("-0x800", result) == 0);
+    REQUIRE(string16_to_int_helper("-", result) == 0);
+    REQUIRE(string16_to_int_helper("+", result) == 0);
+    REQUIRE(string16_to_int_helper("0x", result) == 0);
+    REQUIRE(string16_to_int_helper("+0x", result) == 0);
+    REQUIRE(string16_to_int_helper("0x80", result) == 0);
+    REQUIRE(string16_to_int_helper("-0x81", result) == 0);
+    REQUIRE(string16_to_int_helper("-0x800", result) == 0);
 }
 
 template <typename T>
@@ -359,6 +371,8 @@ TEST_CASE("string_to_uint", "[string_to_uint]") {
 
     REQUIRE(string_to_uint_helper("-0", result) == 0);
     REQUIRE(string_to_uint_helper("-0x", result) == 0);
+    REQUIRE(string_to_uint_helper("+0x", result) == 0);
+    REQUIRE(string_to_uint_helper("0x", result) == 0);
 }
 
 template <typename T>
@@ -406,6 +420,7 @@ TEST_CASE("string_to_int", "[string_to_int]") {
     REQUIRE(result == -0x80);
 
     REQUIRE(string_to_int_helper("128", result) == 0);
+    REQUIRE(string_to_int_helper("0x", result) == 0);
     REQUIRE(string_to_int_helper("0x80", result) == 0);
     REQUIRE(string_to_int_helper("+0x80", result) == 0);
     REQUIRE(string_to_int_helper("-129", result) == 0);

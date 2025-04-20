@@ -8,7 +8,8 @@
 
 namespace kon {
 template <typename T>
-std::size_t rstring10_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
+static inline std::size_t
+    rstring10_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
     const char *str_org = str;
     // Remove zeros.
     for (; str_size > 0; str_size--) {
@@ -22,11 +23,11 @@ std::size_t rstring10_to_general_uint(const char *str, std::size_t str_size, T &
     uint8_t c;
     for (std::size_t s = (str_size <= max_size) ? str_size : max_size; s > 0; s--) {
         c = base16_decode_table[static_cast<uint8_t>(*str)];
-        number = number * 10 + c;
         if (c >= 10) {
             result = number;
             return str - str_org;
         }
+        number = number * 10 + c;
         str++;
     }
     if (str_size <= max_size) {
@@ -70,7 +71,8 @@ std::size_t rstring10_to_uint(const char *str, std::size_t str_size, uint64_t &r
 }
 
 template <typename T>
-std::size_t rstring16_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
+static inline std::size_t
+    rstring16_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
     const char *str_org = str;
     // Remove zeros.
     for (; str_size > 0; str_size--) {
@@ -84,11 +86,11 @@ std::size_t rstring16_to_general_uint(const char *str, std::size_t str_size, T &
     uint8_t c;
     for (std::size_t s = (str_size <= max_size) ? str_size : max_size; s > 0; s--) {
         c = base16_decode_table[static_cast<uint8_t>(*str)];
-        number = (number << 4) + c;
         if (c >= 16) {
             result = number;
             return str - str_org;
         }
+        number = (number << 4) + c;
         str++;
     }
     if (str_size <= max_size) {
@@ -309,9 +311,32 @@ std::size_t string_to_float(const char *str, std::size_t str_size, long double &
 }
 
 template <typename T>
-std::size_t string_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
-    std::size_t pos = string16_to_general_uint(str, str_size, result);
-    return (pos == 0) ? string10_to_general_uint(str, str_size, result) : pos;
+static inline std::size_t
+    string_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
+    const char *str_org = str;
+    if (str_size > 0) [[likely]] {
+        uint8_t c = *str;
+        if (c == '+') {
+            str++;
+            str_size--;
+        }
+    }
+    if (str_size >= 2) {
+        uint8_t c = str[1];
+        if (*str == '0' && ((c == 'x') || (c == 'X'))) {
+            str += 2;
+            std::size_t pos = rstring16_to_general_uint(str, str_size - 2, result);
+            if (pos == 0) {
+                return 0;
+            }
+            return (str - str_org) + pos;
+        }
+    }
+    std::size_t pos = rstring10_to_general_uint(str, str_size, result);
+    if (pos == 0) {
+        return 0;
+    }
+    return (str - str_org) + pos;
 }
 
 std::size_t string_to_uint(const char *str, std::size_t str_size, uint8_t &result) noexcept {
@@ -331,9 +356,61 @@ std::size_t string_to_uint(const char *str, std::size_t str_size, uint64_t &resu
 }
 
 template <typename T>
-std::size_t string_to_general_int(const char *str, std::size_t str_size, T &result) noexcept {
-    std::size_t pos = string16_to_general_int(str, str_size, result);
-    return (pos == 0) ? string10_to_general_int(str, str_size, result) : pos;
+static inline std::size_t
+    string_to_general_int(const char *str, std::size_t str_size, T &result) noexcept {
+    const char *str_org = str;
+    bool negative = false;
+    if (str_size > 0) [[likely]] {
+        uint8_t c = *str;
+        if (c == '+') {
+            str++;
+            str_size--;
+        } else if (c == '-') {
+            str++;
+            str_size--;
+            negative = true;
+        }
+    }
+    using UT = std::make_unsigned_t<T>;
+    UT number;
+    if (str_size >= 2) {
+        uint8_t c = str[1];
+        if (*str == '0' && ((c == 'x') || (c == 'X'))) {
+            str += 2;
+            std::size_t pos = rstring16_to_general_uint(str, str_size - 2, number);
+            if (pos == 0) {
+                return 0;
+            }
+            if (negative) {
+                if (number > static_cast<UT>(std::numeric_limits<T>::min())) {
+                    return 0;
+                }
+                result = -number;
+                return (str - str_org) + pos;
+            }
+            if (number > static_cast<UT>(std::numeric_limits<T>::max())) {
+                return 0;
+            }
+            result = number;
+            return (str - str_org) + pos;
+        }
+    }
+    std::size_t pos = rstring10_to_general_uint(str, str_size, number);
+    if (pos == 0) {
+        return 0;
+    }
+    if (negative) {
+        if (number > static_cast<UT>(std::numeric_limits<T>::min())) {
+            return 0;
+        }
+        result = -number;
+        return (str - str_org) + pos;
+    }
+    if (number > static_cast<UT>(std::numeric_limits<T>::max())) {
+        return 0;
+    }
+    result = number;
+    return (str - str_org) + pos;
 }
 
 std::size_t string_to_int(const char *str, std::size_t str_size, int8_t &result) noexcept {
