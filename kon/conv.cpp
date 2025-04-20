@@ -4,6 +4,7 @@
 
 #include <kon/conv.hpp>
 #include <kon/base10.hpp>
+#include <kon/base16.hpp>
 #include <limits>
 #include <charconv>
 
@@ -84,7 +85,7 @@ static inline std::size_t
     constexpr auto max_size = sizeof(T) * 2;
     uint8_t c;
     for (std::size_t s = (str_size <= max_size) ? str_size : max_size; s > 0; s--) {
-        c = base16_decode_table[static_cast<uint8_t>(*str)];
+        c = base16_char_decode(*str);
         if (c >= 16) [[unlikely]] {
             result = number;
             return str - str_org;
@@ -96,7 +97,7 @@ static inline std::size_t
         result = number;
         return str - str_org;
     } // else if (str_size > max_size)
-    if (is_base16(*str)) [[unlikely]] { // Too many?
+    if (is_base16_char(*str)) [[unlikely]] { // Too many?
         return 0;
     }
     result = number;

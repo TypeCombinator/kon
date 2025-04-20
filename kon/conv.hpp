@@ -8,12 +8,6 @@
 
 namespace kon {
 
-extern const uint8_t base16_decode_table[256];
-
-static inline bool is_base16(char c) noexcept {
-    return base16_decode_table[static_cast<uint8_t>(c)] < 16;
-}
-
 std::size_t rstring10_to_uint(const char *str, std::size_t str_size, uint8_t &result) noexcept;
 std::size_t rstring10_to_uint(const char *str, std::size_t str_size, uint16_t &result) noexcept;
 std::size_t rstring10_to_uint(const char *str, std::size_t str_size, uint32_t &result) noexcept;
