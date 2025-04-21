@@ -1,22 +1,22 @@
-#ifndef MANUAL_LIFETIME_A264C25A_9225_4574_986C_1DADACD9283D
-#define MANUAL_LIFETIME_A264C25A_9225_4574_986C_1DADACD9283D
+#ifndef INERTING_A264C25A_9225_4574_986C_1DADACD9283D
+#define INERTING_A264C25A_9225_4574_986C_1DADACD9283D
 #include <memory>
 
 namespace kon {
 template <typename T>
-class manual_lifetime {
+class inerting {
    public:
-    manual_lifetime() noexcept {
+    inerting() noexcept {
     }
 
-    ~manual_lifetime() noexcept {
+    ~inerting() noexcept {
     }
 
     // Disallow coping and moving.
-    manual_lifetime(const manual_lifetime &) = delete;
-    manual_lifetime(manual_lifetime &&) = delete;
-    manual_lifetime &operator=(const manual_lifetime &) = delete;
-    manual_lifetime &operator=(manual_lifetime &&) = delete;
+    inerting(const inerting &) = delete;
+    inerting(inerting &&) = delete;
+    inerting &operator=(const inerting &) = delete;
+    inerting &operator=(inerting &&) = delete;
 
     template <typename... Args>
     void construct(Args &&...args) noexcept(std::is_nothrow_constructible_v<T, Args...>) {
@@ -46,4 +46,4 @@ class manual_lifetime {
     };
 };
 } // namespace kon
-#endif /* manual_lifetime.hpp */
+#endif /* inerting.hpp */
