@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 TypeCombinator <typecombinator@foxmail.com>
+//
+// SPDX-License-Identifier: BSD 3-Clause
+
 #ifndef INERTING_A264C25A_9225_4574_986C_1DADACD9283D
 #define INERTING_A264C25A_9225_4574_986C_1DADACD9283D
 #include <memory>
