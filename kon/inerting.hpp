@@ -10,10 +10,10 @@ namespace kon {
 template <typename T>
 class inerting {
    public:
-    inerting() noexcept {
+    constexpr inerting() noexcept {
     }
 
-    ~inerting() noexcept {
+    constexpr ~inerting() noexcept {
     }
 
     // Disallow coping and moving.
@@ -23,8 +23,8 @@ class inerting {
     inerting &operator=(inerting &&) = delete;
 
     template <typename... Args>
-    void construct(Args &&...args) noexcept(std::is_nothrow_constructible_v<T, Args...>) {
-        std::construct_at(std::addressof(storage), std::forward<Args>(args)...);
+    T &construct(Args &&...args) noexcept(std::is_nothrow_constructible_v<T, Args...>) {
+        return *std::construct_at(std::addressof(storage), std::forward<Args>(args)...);
     }
 
     void destruct() noexcept(std::is_nothrow_destructible_v<T>) {
