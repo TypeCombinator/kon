@@ -28,4 +28,31 @@ const uint8_t base16_decode_table[256] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 };
 
+std::size_t
+    base16_decode(const char *str, std::size_t str_size, std::uint8_t *data, std::size_t data_size) {
+    const char *str_org = str;
+    const char *str_end = str + str_size;
+    for (; str < str_end; str++) {
+        uint8_t high = kon::base16_char_decode(*str);
+        if (high >= 16u) {
+            return str - str_org;
+        }
+        str++;
+        if (str >= str_end) {
+            return 0;
+        }
+        if (data_size == 0) {
+            return 0;
+        }
+        uint8_t low = kon::base16_char_decode(*str);
+        if (low >= 16u) {
+            return 0;
+        }
+        *data = (high << 4) | low;
+        data++;
+        data_size--;
+    }
+    return str - str_org;
+}
+
 } // namespace kon

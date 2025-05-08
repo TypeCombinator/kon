@@ -18,5 +18,8 @@ static inline std::uint8_t base16_char_decode(char c) noexcept {
     return base16_decode_table[static_cast<uint8_t>(c)];
 }
 
+std::size_t
+    base16_decode(const char *str, std::size_t str_size, std::uint8_t *data, std::size_t data_size);
+
 }; // namespace kon
 #endif /* base16.hpp */
