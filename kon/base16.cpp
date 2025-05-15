@@ -28,24 +28,27 @@ const uint8_t base16_decode_table[256] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 };
 
-std::size_t
-    base16_decode(const char *str, std::size_t str_size, std::uint8_t *data, std::size_t data_size) {
+std::size_t base16_decode(
+    const char *str,
+    std::size_t str_size,
+    std::uint8_t *data,
+    std::size_t data_size) noexcept {
     const char *str_org = str;
     const char *str_end = str + str_size;
     for (; str < str_end; str++) {
         uint8_t high = kon::base16_char_decode(*str);
-        if (high >= 16u) {
+        if (high >= 16u) [[unlikely]] {
             return str - str_org;
         }
         str++;
-        if (str >= str_end) {
+        if (str >= str_end) [[unlikely]] {
             return 0;
         }
-        if (data_size == 0) {
+        if (data_size == 0) [[unlikely]] {
             return 0;
         }
         uint8_t low = kon::base16_char_decode(*str);
-        if (low >= 16u) {
+        if (low >= 16u) [[unlikely]] {
             return 0;
         }
         *data = (high << 4) | low;
