@@ -48,7 +48,8 @@ TEST_CASE("basic", "[maybe]") {
     }
 
     SECTION("Pointer specialization") {
-        kon::maybe<int*> m(new int(42));
+        int number = 42;
+        kon::maybe<int*> m(&number);
         REQUIRE(m.has_value());
         REQUIRE(*m.get() == 42);
 
