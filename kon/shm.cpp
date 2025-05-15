@@ -37,6 +37,7 @@ shm::shm(int& err, const std::string& file, std::size_t size) noexcept {
     }
     if ((!is_file_exist) && (ftruncate(fd, msize) != 0)) {
         err = -4;
+        close(fd);
         return;
     }
     auto* m = mmap(0, msize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
@@ -45,6 +46,7 @@ shm::shm(int& err, const std::string& file, std::size_t size) noexcept {
         close(fd);
         return;
     }
+    mis_first = !is_file_exist;
     mfd = fd;
     memory = m;
 
