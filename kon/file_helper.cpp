@@ -7,7 +7,7 @@
 
 namespace kon::file_helper {
 
-std::unique_ptr<std::uint8_t[]> read_all(std::string file_name, size_t &file_size) {
+std::unique_ptr<std::uint8_t[]> read_all(const std::string &file_name, size_t &file_size) {
     std::ifstream file(file_name, std::ios::ate | std::ios::binary);
     if (!file.is_open()) {
         return nullptr;
