@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 TypeCombinator <typecombinator@foxmail.com>
+//
+// SPDX-License-Identifier: BSD 3-Clause
+
 #ifndef SHM_B2DCD76C_1F6E_4641_92FB_030FFF2B96FD
 #define SHM_B2DCD76C_1F6E_4641_92FB_030FFF2B96FD
 

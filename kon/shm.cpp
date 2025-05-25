@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 TypeCombinator <typecombinator@foxmail.com>
+//
+// SPDX-License-Identifier: BSD 3-Clause
+
 #include <kon/shm.hpp>
 #include <unistd.h>
 #include <fcntl.h>
