@@ -105,6 +105,13 @@ class dbuf {
     std::uint32_t buf_len;
     std::uint32_t data_len;
     std::uint32_t data_off;
+    std::uint8_t m_padding[4];
+   public:
+    static constexpr std::size_t padding_size = sizeof(m_padding);
+
+    std::uint8_t *padding() noexcept {
+        return m_padding;
+    }
 };
 
 } // namespace kon
