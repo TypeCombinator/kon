@@ -142,7 +142,7 @@ TEST_CASE("vlm_ring", "[vlm_ring]") {
     }
 }
 
-TEST_CASE("vlm_ring_multi_thread", "[vlm_ring_multi_thread]") {
+TEST_CASE("vlm_ring_multi_thread", "[vlm_ring]") {
     constexpr uint32_t max_item_num = 300000;
     kon::vlm_ring q(max_item_num / 10);
 

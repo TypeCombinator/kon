@@ -1,7 +1,7 @@
 #include <kon/base16.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("base16_decode", "[base16_decode]") {
+TEST_CASE("base16_decode", "[base16]") {
     using namespace std::literals;
 
     {

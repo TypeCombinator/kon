@@ -9,7 +9,7 @@ struct payload_head {
 static const std::uint8_t frame_check[12] =
     {0x34, 0x12, 0x67, 0x45, 0x78, 0x56, 0x34, 0x12, 0x21, 0x43, 0x65, 0x87};
 
-TEST_CASE("append", "[append]") {
+TEST_CASE("append", "[dbuf]") {
     kon::dbuf buf;
     std::uint8_t frame[12] = {};
 
@@ -32,7 +32,7 @@ TEST_CASE("append", "[append]") {
     CHECK(std::memcmp(frame, frame_check, sizeof(frame)) == 0);
 }
 
-TEST_CASE("append_rest", "[append_rest]") {
+TEST_CASE("append_rest", "[dbuf]") {
     kon::dbuf buf;
     std::uint8_t frame[12] = {};
     buf.init(frame, 0, 4, sizeof(frame));
@@ -48,7 +48,7 @@ TEST_CASE("append_rest", "[append_rest]") {
     REQUIRE(data_size == 2);
 }
 
-TEST_CASE("prepend", "[prepend]") {
+TEST_CASE("prepend", "[dbuf]") {
     kon::dbuf buf;
     std::uint8_t frame[12] = {};
     buf.init(frame, 0, sizeof(payload_head), sizeof(frame));
@@ -69,7 +69,7 @@ TEST_CASE("prepend", "[prepend]") {
     CHECK(std::memcmp(frame, frame_check, sizeof(frame)) == 0);
 }
 
-TEST_CASE("read", "[read]") {
+TEST_CASE("read", "[dbuf]") {
     kon::dbuf buf;
 
     buf.init(const_cast<uint8_t *>(frame_check), 0, 0, sizeof(frame_check));

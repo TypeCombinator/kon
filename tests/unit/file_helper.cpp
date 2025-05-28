@@ -20,7 +20,7 @@ static int read_all_to_string(const std::string& filePath, std::string& file_con
     return 0;
 }
 
-TEST_CASE("read_all", "[read_all]") {
+TEST_CASE("read_all", "[file_helper]") {
     std::string file_path{"tests/unit/CMakeLists.txt"};
     std::size_t file_size;
     auto file_data = kon::file_helper::read_all(file_path, file_size);

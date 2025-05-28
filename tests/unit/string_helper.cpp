@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <kon/string_helper.hpp>
 
-TEST_CASE("string_splitter", "[string_splitter]") {
+TEST_CASE("string_splitter", "[string_helper]") {
     SECTION("empty0") {
         std::string input{""};
         kon::string_splitter<';'> splitter(input.data(), input.size());
