@@ -44,13 +44,24 @@ class dbuf {
         requires(std::is_trivial_v<std::remove_all_extents_t<T>>)
     ET *append(uint32_t number = 1) noexcept {
         std::uint32_t size = number * sizeof(ET);
-        if (size > (std::uint32_t) (buf_len - data_off - data_len)) [[unlikely]] {
+        std::uint32_t offset = data_off + data_len;
+        if (size > (std::uint32_t) (buf_len - offset)) [[unlikely]] {
             return nullptr;
         }
-        std::uint8_t *tail;
-        tail = buf_va + data_off + data_len;
+        std::uint8_t *tail = buf_va + offset;
         data_len += size;
         return new (tail) ET[number];
+    }
+
+    std::uint8_t *append_rest_begin(std::uint32_t &rest_size) noexcept {
+        std::uint32_t offset = data_off + data_len;
+        rest_size = buf_len - offset;
+        return buf_va + offset;
+    }
+
+    // Notice: size <= rest_size must be ensured, otherwise it's UB!
+    void append_rest_end(std::uint32_t size) noexcept {
+        data_len += size;
     }
 
     template <typename T = std::uint8_t[], typename ET = std::remove_extent_t<T>>

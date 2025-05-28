@@ -32,6 +32,22 @@ TEST_CASE("append", "[append]") {
     CHECK(std::memcmp(frame, frame_check, sizeof(frame)) == 0);
 }
 
+TEST_CASE("append_rest", "[append_rest]") {
+    kon::dbuf buf;
+    std::uint8_t frame[12] = {};
+    buf.init(frame, 0, 4, sizeof(frame));
+
+    uint32_t data_size;
+    uint8_t *data = buf.append_rest_begin(data_size);
+    REQUIRE(data_size == 8);
+    std::memcpy(data, "123456", 6);
+    data_size = 6;
+    buf.append(data_size);
+
+    data = buf.append_rest_begin(data_size);
+    REQUIRE(data_size == 2);
+}
+
 TEST_CASE("prepend", "[prepend]") {
     kon::dbuf buf;
     std::uint8_t frame[12] = {};
