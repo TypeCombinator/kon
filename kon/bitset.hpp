@@ -15,9 +15,29 @@ constexpr void bit_for_each(T x, F &&f) {
         unsigned char i = countr_zero<T, false>(x);
         f(i);
         x &= (~(one << i));
-        i = countr_zero<T, false>(x);
     }
 }
+
+template <typename T>
+class bit_iterator {
+   public:
+    bit_iterator(T x) noexcept
+        : m_x{x} {
+    }
+
+    template <typename IT>
+    bool next(IT &index) noexcept {
+        constexpr T one = 1;
+        if (m_x == 0) [[unlikely]] {
+            return false;
+        }
+        index = countr_zero<T, false>(m_x);
+        m_x &= (~(one << index));
+        return true;
+    }
+   private:
+    T m_x;
+};
 
 } // namespace kon
 
