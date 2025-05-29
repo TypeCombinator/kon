@@ -36,8 +36,16 @@ class dbuf {
         return buf_va;
     }
 
-    std::size_t iova() const noexcept {
+    std::uintptr_t iova() const noexcept {
         return buf_iova;
+    }
+
+    std::uint32_t capacity() const noexcept {
+        return buf_len;
+    }
+
+    std::uint32_t headroom() const noexcept {
+        return data_off;
     }
 
     template <typename T = std::uint8_t[], typename ET = std::remove_extent_t<T>>
