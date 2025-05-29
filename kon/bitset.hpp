@@ -12,7 +12,7 @@ template <typename T, typename F>
 constexpr void bit_for_each(T x, F &&f) {
     constexpr T one = 1;
     while (x != 0) {
-        unsigned char i = countr_zero<T, false>(x);
+        unsigned char i = countr_zero<T, true>(x);
         f(i);
         x &= (~(one << i));
     }
@@ -31,7 +31,7 @@ class bit_iterator {
         if (m_x == 0) [[unlikely]] {
             return false;
         }
-        index = countr_zero<T, false>(m_x);
+        index = countr_zero<T, true>(m_x);
         m_x &= (~(one << index));
         return true;
     }

@@ -22,9 +22,9 @@ constexpr T byteswap(T x) noexcept {
 }
 
 // Sometimes we need UB!
-template <typename T, bool disable_ub = true>
+template <typename T, bool enable_ub = false>
 constexpr int count_zero(T x) noexcept {
-    if constexpr (disable_ub) {
+    if constexpr (!enable_ub) {
         if (x == 0) { // __builtin_clz(0) is UB!
             return sizeof(x) * 8;
         }
@@ -42,9 +42,9 @@ constexpr int count_zero(T x) noexcept {
 }
 
 // Sometimes we need UB!
-template <typename T, bool disable_ub = true>
+template <typename T, bool enable_ub = false>
 constexpr int countr_zero(T x) noexcept {
-    if constexpr (disable_ub) {
+    if constexpr (!enable_ub) {
         if (x == 0) { // __builtin_ctz(0) is UB!
             return sizeof(x) * 8;
         }
