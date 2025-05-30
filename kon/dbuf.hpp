@@ -15,6 +15,22 @@ namespace kon {
 // Device buffer view.
 class dbuf {
    public:
+    dbuf() noexcept
+        : buf_va{nullptr}
+        , buf_iova{0}
+        , buf_len{0}
+        , data_len{0}
+        , data_off{0} {
+    }
+
+    dbuf(std::uint8_t *va, std::uintptr_t iova, std::uint32_t headroom, std::uint32_t size) noexcept
+        : buf_va{va}
+        , buf_iova{iova}
+        , buf_len{size}
+        , data_len{0}
+        , data_off{(headroom < size) ? headroom : size} {
+    }
+
     void init(
         std::uint8_t *va,
         std::uintptr_t iova,
