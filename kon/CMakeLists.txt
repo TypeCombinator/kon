@@ -5,6 +5,7 @@
 add_library(kon STATIC
     base16.cpp
     conv.cpp
+    dev_mem.cpp
     file_helper.cpp
     shm.cpp
 )
