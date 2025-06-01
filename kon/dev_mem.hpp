@@ -10,7 +10,7 @@
 namespace kon {
 class dev_mem {
    public:
-    dev_mem() noexcept;
+    dev_mem(bool immediate = true) noexcept;
     ~dev_mem() noexcept;
 
     dev_mem(const dev_mem &) = delete;
@@ -23,6 +23,12 @@ class dev_mem {
     dev_mem &operator=(dev_mem &&other) noexcept {
         move_from(std::move(other));
         return *this;
+    }
+
+    void open() noexcept;
+
+    explicit operator bool() const noexcept {
+        return m_fd >= 0;
     }
 
     // auto page_size = sysconf(_SC_PAGESIZE);

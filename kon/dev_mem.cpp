@@ -9,8 +9,12 @@
 
 namespace kon {
 
-dev_mem::dev_mem() noexcept {
-    m_fd = ::open("/dev/mem", O_RDWR | O_SYNC);
+dev_mem::dev_mem(bool immediate) noexcept {
+    if (immediate) {
+        m_fd = ::open("/dev/mem", O_RDWR | O_SYNC);
+        return;
+    }
+    m_fd = -1;
 }
 
 dev_mem::~dev_mem() noexcept {
@@ -18,6 +22,10 @@ dev_mem::~dev_mem() noexcept {
         close(m_fd);
         m_fd = -1;
     }
+}
+
+void dev_mem::open() noexcept {
+    m_fd = ::open("/dev/mem", O_RDWR | O_SYNC);
 }
 
 void *dev_mem::map(std::uintptr_t address, std::size_t size) noexcept {
