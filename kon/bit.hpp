@@ -23,7 +23,7 @@ constexpr T byteswap(T x) noexcept {
 
 // Sometimes we need UB!
 template <typename T, bool enable_ub = false>
-constexpr int count_zero(T x) noexcept {
+constexpr int countl_zero(T x) noexcept {
     if constexpr (!enable_ub) {
         if (x == 0) { // __builtin_clz(0) is UB!
             return sizeof(x) * 8;

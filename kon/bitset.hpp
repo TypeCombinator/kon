@@ -22,7 +22,7 @@ template <typename T, typename F>
 constexpr void bit_reverse_for_each(T x, F &&f) {
     constexpr T mask = ~(static_cast<T>(1) << (sizeof(T) * 8 - 1));
     while (x != 0) [[likely]] {
-        unsigned char i = count_zero<T, true>(x);
+        unsigned char i = countl_zero<T, true>(x);
         f(i);
         x &= (mask >> i);
     }
@@ -62,7 +62,7 @@ class bit_reverse_iterator {
         if (m_x == 0) [[unlikely]] {
             return false;
         }
-        index = count_zero<T, true>(m_x);
+        index = countl_zero<T, true>(m_x);
         m_x &= (mask >> index);
         return true;
     }

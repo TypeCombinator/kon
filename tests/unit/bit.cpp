@@ -19,27 +19,27 @@ TEST_CASE("byteswap", "[bit]") {
 TEST_CASE("count_zero", "[bit]") {
     SECTION("uint32_t") {
         uint32_t value = 1;
-        REQUIRE(kon::count_zero(value) == 31);
+        REQUIRE(kon::countl_zero(value) == 31);
         value = 0;
-        REQUIRE(kon::count_zero(value) == 32);
+        REQUIRE(kon::countl_zero(value) == 32);
         value = ~value;
-        REQUIRE(kon::count_zero(value) == 0);
+        REQUIRE(kon::countl_zero(value) == 0);
         value = 0x7FFFFFFF;
-        REQUIRE(kon::count_zero(value) == 1);
+        REQUIRE(kon::countl_zero(value) == 1);
         for (uint32_t i = 0; i < 32; i++) {
-            REQUIRE(kon::count_zero(0x80000000u >> i) == i);
+            REQUIRE(kon::countl_zero(0x80000000u >> i) == i);
         }
     }
     SECTION("uint64_t") {
         uint64_t value = 1;
-        REQUIRE(kon::count_zero(value) == 63);
+        REQUIRE(kon::countl_zero(value) == 63);
         value = 0;
-        REQUIRE(kon::count_zero(value) == 64);
+        REQUIRE(kon::countl_zero(value) == 64);
         value = ~value;
-        REQUIRE(kon::count_zero(value) == 0);
+        REQUIRE(kon::countl_zero(value) == 0);
         value = 1ull << 63;
         for (uint32_t i = 0; i < 64; i++) {
-            REQUIRE(kon::count_zero(value >> i) == i);
+            REQUIRE(kon::countl_zero(value >> i) == i);
         }
     }
 }
