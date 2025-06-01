@@ -21,7 +21,6 @@ constexpr T byteswap(T x) noexcept {
     }
 }
 
-// Sometimes we need UB!
 template <typename T, bool enable_ub = false>
 constexpr int countl_zero(T x) noexcept {
     if constexpr (!enable_ub) {
@@ -41,7 +40,6 @@ constexpr int countl_zero(T x) noexcept {
     }
 }
 
-// Sometimes we need UB!
 template <typename T, bool enable_ub = false>
 constexpr int countr_zero(T x) noexcept {
     if constexpr (!enable_ub) {
