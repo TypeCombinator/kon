@@ -9,6 +9,7 @@
 namespace kon {
 extern const uint8_t base16_encode_table[16];
 extern const uint8_t base16_decode_table[256];
+extern const char base16_encode_lut2[512];
 
 static inline bool is_base16_char(char c) noexcept {
     return base16_decode_table[static_cast<uint8_t>(c)] < 16;
