@@ -19,8 +19,8 @@ struct fmt::formatter<kon::mem_view> {
 
     template <typename FormatContext>
     auto format(const kon::mem_view& mem, FormatContext& ctx) const {
-        auto* data = static_cast<const unsigned char*>(mem.va);
-        const auto* data_end = data + mem.size;
+        auto data = static_cast<const unsigned char*>(mem.va);
+        auto data_end = data + mem.size;
         auto out = ctx.out();
         std::size_t line_count = 0;
         for (; data < data_end; data++) {

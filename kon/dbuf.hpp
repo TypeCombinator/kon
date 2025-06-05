@@ -43,6 +43,20 @@ class dbuf {
         data_off = (headroom < size) ? headroom : size;
     }
 
+    struct anchor {
+        std::uint32_t length;
+        std::uint32_t offset;
+    };
+
+    anchor store() noexcept {
+        return anchor{data_len, data_off};
+    }
+
+    void restore(const anchor &point) noexcept {
+        data_len = point.length;
+        data_off = point.offset;
+    }
+
     void reset(std::uint32_t headroom, std::uint32_t data_length) noexcept {
         data_len = data_length;
         data_off = (headroom < buf_len) ? headroom : buf_len;
