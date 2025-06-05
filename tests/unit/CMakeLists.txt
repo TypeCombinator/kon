@@ -6,6 +6,7 @@ add_executable(kon_tests
     conv.cpp
     dbuf.cpp
     file_helper.cpp
+    inerting.cpp
     maybe.cpp
     shm.cpp
     string_helper.cpp
