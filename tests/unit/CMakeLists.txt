@@ -1,6 +1,7 @@
 add_executable(kon_tests
     base10.cpp
     base16.cpp
+    bio.cpp
     bit.cpp
     bitset.cpp
     conv.cpp
