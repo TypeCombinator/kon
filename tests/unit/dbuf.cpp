@@ -53,7 +53,7 @@ TEST_CASE("prepend", "[dbuf]") {
     std::uint8_t frame[12] = {};
     buf.init(frame, 0, sizeof(payload_head), sizeof(frame));
 
-    auto head = buf.preppend<payload_head>();
+    auto head = buf.prepend<payload_head>();
     REQUIRE(head != nullptr);
 
     head->magic = 0x1234;

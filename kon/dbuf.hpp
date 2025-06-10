@@ -12,7 +12,7 @@
 
 namespace kon {
 
-// Device buffer view.
+// Device buffer view, it's easy to use, although there are some UBs.
 class dbuf {
    public:
     dbuf() noexcept
@@ -104,7 +104,7 @@ class dbuf {
 
     template <typename T = std::uint8_t[], typename ET = std::remove_extent_t<T>>
         requires(std::is_trivial_v<std::remove_all_extents_t<T>>)
-    ET *preppend(std::uint32_t number = 1) noexcept {
+    ET *prepend(std::uint32_t number = 1) noexcept {
         std::uint32_t size = number * sizeof(ET);
         if (size > data_off) [[unlikely]] {
             return nullptr;
