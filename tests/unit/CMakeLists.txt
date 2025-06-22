@@ -1,4 +1,5 @@
 add_executable(kon_tests
+    hash/md5.cpp
     base10.cpp
     base16.cpp
     bio.cpp

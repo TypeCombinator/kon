@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: BSD 3-Clause
 
 add_library(kon STATIC
+    hash/md5.cpp
     base16.cpp
     conv.cpp
     dev_mem.cpp
