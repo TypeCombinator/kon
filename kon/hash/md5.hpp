@@ -1,9 +1,12 @@
+// SPDX-FileCopyrightText: 2025 TypeCombinator <typecombinator@foxmail.com>
+//
+// SPDX-License-Identifier: BSD 3-Clause
+
 #ifndef MD5_EF91EA4D_C9D5_4146_83F7_422D04457955
 #define MD5_EF91EA4D_C9D5_4146_83F7_422D04457955
 // References:
 // [0]: http://www.ietf.org/rfc/rfc1321.txt
-#include <cstdint>
-#include <cstddef>
+#include <string>
 
 namespace kon {
 
@@ -28,6 +31,7 @@ static inline void md5(const unsigned char *input, size_t ilen, unsigned char ou
     ctx.finish(output);
 }
 
+int file_md5(const std::string &file_name, unsigned char output[16]) noexcept;
 
 } // namespace kon
 #endif // md5.hpp

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 TypeCombinator <typecombinator@foxmail.com>
+//
+// SPDX-License-Identifier: BSD 3-Clause
+
 #include <cstring>
 #include <kon/hash/md5.hpp>
 
@@ -200,4 +204,67 @@ void md5_context::finish(unsigned char output[16]) noexcept {
     MD5_PUT_UINT32_LE(m_state[2], output, 8);
     MD5_PUT_UINT32_LE(m_state[3], output, 12);
 }
+
+int file_md5(const std::string &file_name, unsigned char output[16]) noexcept {
+    constexpr std::size_t block_size = 32768;
+
+    auto stream = std::fopen(file_name.c_str(), "rb");
+    if (stream == nullptr) {
+        return -1;
+    }
+    auto buffer = new (std::nothrow) uint8_t[block_size + 72];
+    if (buffer == nullptr) {
+        std::fclose(stream);
+        return -1;
+    }
+
+    md5_context ctx;
+    ctx.start();
+    size_t sum;
+    // Iterate over full file contents.
+    while (1) {
+        // We read the file in blocks of block_size bytes.  One call of the computation function
+        // processes the whole buffer so that with the next round of the loop another block can be
+        // read.
+        sum = 0;
+        // Read block.  Take care for partial reads.
+        while (1) {
+            // Either process a partial fread() from this loop, or the fread() in afalg_stream may
+            // have gotten EOF. We need to avoid a subsequent fread() as EOF may not be sticky. For
+            // details of such systems, see: https://sourceware.org/bugzilla/show_bug.cgi?id=1190
+            if (std::feof(stream)) {
+                goto lb_process_partial_block;
+            }
+            size_t n = std::fread(buffer + sum, 1, block_size - sum, stream);
+            sum += n;
+            if (sum == block_size) {
+                break;
+            }
+            if (n == 0) {
+                // Check for the error flag IFF N == 0, so that we don't exit the loop after a
+                // partial read due to EAGAIN or EWOULDBLOCK.
+                if (std::ferror(stream)) {
+                    delete[] buffer;
+                    std::fclose(stream);
+                    return 1;
+                }
+                goto lb_process_partial_block;
+            }
+        }
+        // Process buffer with block_size bytes. Note that block_size % 64 == 0
+        ctx.update(buffer, block_size);
+    }
+lb_process_partial_block:
+    // Process any remaining bytes.
+    if (sum > 0) {
+        ctx.update(buffer, sum);
+    }
+    // Construct result in desired memory.
+    ctx.finish(output);
+
+    delete[] buffer;
+    std::fclose(stream);
+    return 0;
+}
+
 } // namespace kon
