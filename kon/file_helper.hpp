@@ -12,6 +12,19 @@ namespace kon::file_helper {
 
 std::unique_ptr<std::uint8_t[]> read_all(const std::string &file_name, size_t &file_size);
 
+// 0: {file0(content0), file1(content1)}
+// 1: {file0(content0), temp_file(content1)}
+// 2: {file1(content0), temp_file(content1)}
+// 3: {file1(content0), file0(content1)}
+int rename_swap(
+    const std::string &file0_name,
+    const std::string &file1_name,
+    const std::string &temp_file_name) noexcept;
+
+#ifdef __linux__
+int swap(const std::string &file0_name, const std::string &file1_name) noexcept;
+#endif
+
 } // namespace kon::file_helper
 
 #endif /* file_helper.hpp */
