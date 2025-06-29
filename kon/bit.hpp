@@ -59,5 +59,10 @@ constexpr int countr_zero(T x) noexcept {
     }
 }
 
+template <typename T>
+static constexpr T bit_mask(unsigned char msb, unsigned char lsb) noexcept {
+    return (~static_cast<T>(0) << (msb + 1)) ^ (~static_cast<T>(0) << lsb);
+}
+
 } // namespace kon
 #endif // bit.hpp

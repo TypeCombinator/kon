@@ -74,3 +74,11 @@ TEST_CASE("countr_zero", "[bit]") {
         }
     }
 }
+
+TEST_CASE("bit_mask", "[bit]") {
+    STATIC_REQUIRE(kon::bit_mask<uint8_t>(7, 0) == 0b1111'1111);
+    STATIC_REQUIRE(kon::bit_mask<uint8_t>(7, 1) == 0b1111'1110);
+    STATIC_REQUIRE(kon::bit_mask<uint8_t>(6, 0) == 0b0111'1111);
+    STATIC_REQUIRE(kon::bit_mask<uint8_t>(6, 1) == 0b0111'1110);
+    STATIC_REQUIRE(kon::bit_mask<uint8_t>(4, 3) == 0b0001'1000);
+}
