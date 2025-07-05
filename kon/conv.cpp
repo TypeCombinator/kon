@@ -5,8 +5,10 @@
 #include <kon/conv.hpp>
 #include <kon/base10.hpp>
 #include <kon/base16.hpp>
+#include <cstring>
 #include <limits>
 #include <charconv>
+#include <bit>
 
 namespace kon {
 template <typename T>
@@ -147,6 +149,17 @@ std::size_t string10_to_uint(const char *str, std::size_t str_size, uint64_t &re
     return string10_to_general_uint(str, str_size, result);
 }
 
+static inline bool is_string_start_witch_0x(const char *str) noexcept {
+    // static_cast<const uint8_t>(data[0]) | (static_cast<const uint8_t>(data[1]) << 8);
+    uint16_t prefix;
+    std::memcpy(&prefix, str, sizeof(prefix));
+    if constexpr (std::endian::native == std::endian::little) {
+        return (prefix | 0x2000) == 0x7830;
+    } else {
+        return (prefix | 0x20) == 0x3078;
+    }
+}
+
 template <typename T>
 static std::size_t
     string16_to_general_uint(const char *str, std::size_t str_size, T &result) noexcept {
@@ -161,8 +174,7 @@ static std::size_t
     } else {
         prefix = 2;
     }
-    char c = str[1];
-    if (*str != '0' || ((c != 'x') && (c != 'X'))) [[unlikely]] {
+    if (!is_string_start_witch_0x(str)) [[unlikely]] {
         return 0;
     }
     std::size_t pos = rstring16_to_general_uint(str_org + prefix, str_size - prefix, result);
@@ -256,8 +268,7 @@ static inline std::size_t
     } else {
         prefix = 2;
     }
-    c = str[1];
-    if (*str != '0' || ((c != 'x') && (c != 'X'))) [[unlikely]] {
+    if (!is_string_start_witch_0x(str)) [[unlikely]] {
         return 0;
     }
     using UT = std::make_unsigned_t<T>;
@@ -326,8 +337,7 @@ static inline std::size_t
         }
     }
     if (str_size >= 2) {
-        uint8_t c = str[1];
-        if (*str == '0' && ((c == 'x') || (c == 'X'))) {
+        if (is_string_start_witch_0x(str)) {
             str += 2;
             std::size_t pos = rstring16_to_general_uint(str, str_size - 2, result);
             if (pos == 0) [[unlikely]] {
@@ -378,8 +388,7 @@ static inline std::size_t
     using UT = std::make_unsigned_t<T>;
     UT number;
     if (str_size >= 2) {
-        uint8_t c = str[1];
-        if (*str == '0' && ((c == 'x') || (c == 'X'))) {
+        if (is_string_start_witch_0x(str)) {
             str += 2;
             std::size_t pos = rstring16_to_general_uint(str, str_size - 2, number);
             if (pos == 0) [[unlikely]] {
