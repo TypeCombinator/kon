@@ -7,6 +7,7 @@
 // References:
 // [0]: http://www.ietf.org/rfc/rfc1321.txt
 #include <string>
+#include <cstdint>
 
 namespace kon {
 
