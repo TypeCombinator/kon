@@ -11,6 +11,7 @@ add_executable(kon_tests
     inerting.cpp
     maybe.cpp
     shm.cpp
+    spin_lock.cpp
     string_helper.cpp
     vlm_ring.cpp
 )
