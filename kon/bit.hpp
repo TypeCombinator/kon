@@ -60,6 +60,20 @@ constexpr int countr_zero(T x) noexcept {
 }
 
 template <typename T>
+constexpr int popcount(T x) noexcept {
+    if constexpr (sizeof(x) <= sizeof(unsigned)) {
+        return __builtin_popcount(x);
+    } else if constexpr (sizeof(x) <= sizeof(unsigned long)) {
+        return __builtin_popcountl(x);
+    } else if constexpr (sizeof(x) <= sizeof(unsigned long long)) {
+        return __builtin_popcountll(x);
+    } else {
+        static_assert(sizeof(x) <= sizeof(unsigned long long));
+        return -1;
+    }
+}
+
+template <typename T>
 static constexpr T bit_mask(unsigned char msb, unsigned char lsb) noexcept {
     return (~static_cast<T>(0) << (msb + 1)) ^ (~static_cast<T>(0) << lsb);
 }
