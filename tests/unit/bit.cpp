@@ -117,3 +117,43 @@ TEST_CASE("bit_mask", "[bit]") {
     STATIC_REQUIRE(kon::bit_mask<uint8_t>(6, 1) == 0b0111'1110);
     STATIC_REQUIRE(kon::bit_mask<uint8_t>(4, 3) == 0b0001'1000);
 }
+
+TEST_CASE("bit_imask", "[bit]") {
+    STATIC_REQUIRE(kon::bit_imask<uint8_t>(7, 0) == 0b0000'0000);
+    STATIC_REQUIRE(kon::bit_imask<uint8_t>(7, 1) == 0b0000'0001);
+    STATIC_REQUIRE(kon::bit_imask<uint8_t>(6, 0) == 0b1000'0000);
+    STATIC_REQUIRE(kon::bit_imask<uint8_t>(6, 1) == 0b1000'0001);
+    STATIC_REQUIRE(kon::bit_imask<uint8_t>(4, 3) == 0b1110'0111);
+}
+
+TEST_CASE("lsb_mask", "[bit]") {
+    STATIC_REQUIRE(kon::lsb_mask<uint8_t>(7) == 0b1111'1111);
+    STATIC_REQUIRE(kon::lsb_mask<uint8_t>(6) == 0b0111'1111);
+    STATIC_REQUIRE(kon::lsb_mask<uint8_t>(3) == 0b0000'1111);
+    STATIC_REQUIRE(kon::lsb_mask<uint8_t>(1) == 0b0000'0011);
+    STATIC_REQUIRE(kon::lsb_mask<uint8_t>(0) == 0b0000'0001);
+}
+
+TEST_CASE("msb_mask", "[bit]") {
+    STATIC_REQUIRE(kon::msb_mask<uint8_t>(7) == 0b1000'0000);
+    STATIC_REQUIRE(kon::msb_mask<uint8_t>(6) == 0b1100'0000);
+    STATIC_REQUIRE(kon::msb_mask<uint8_t>(3) == 0b1111'1000);
+    STATIC_REQUIRE(kon::msb_mask<uint8_t>(1) == 0b1111'1110);
+    STATIC_REQUIRE(kon::msb_mask<uint8_t>(0) == 0b1111'1111);
+}
+
+TEST_CASE("lsb_imask", "[bit]") {
+    STATIC_REQUIRE(kon::lsb_imask<uint8_t>(7) == 0b0000'0000);
+    STATIC_REQUIRE(kon::lsb_imask<uint8_t>(6) == 0b1000'0000);
+    STATIC_REQUIRE(kon::lsb_imask<uint8_t>(3) == 0b1111'0000);
+    STATIC_REQUIRE(kon::lsb_imask<uint8_t>(1) == 0b1111'1100);
+    STATIC_REQUIRE(kon::lsb_imask<uint8_t>(0) == 0b1111'1110);
+}
+
+TEST_CASE("msb_imask", "[bit]") {
+    STATIC_REQUIRE(kon::msb_imask<uint8_t>(7) == 0b0111'1111);
+    STATIC_REQUIRE(kon::msb_imask<uint8_t>(6) == 0b0011'1111);
+    STATIC_REQUIRE(kon::msb_imask<uint8_t>(3) == 0b0000'0111);
+    STATIC_REQUIRE(kon::msb_imask<uint8_t>(1) == 0b0000'0001);
+    STATIC_REQUIRE(kon::msb_imask<uint8_t>(0) == 0b0000'0000);
+}
