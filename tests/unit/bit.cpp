@@ -75,6 +75,41 @@ TEST_CASE("countr_zero", "[bit]") {
     }
 }
 
+TEST_CASE("count_one", "[bit]") {
+    SECTION("uint32_t") {
+        uint32_t value = 1;
+        REQUIRE(kon::popcount(value) == 1);
+        value = 0;
+        REQUIRE(kon::popcount(value) == 0);
+        value = ~value;
+        REQUIRE(kon::popcount(value) == 32);
+        value = 0xEF0;
+        REQUIRE(kon::popcount(value) == 7);
+        value = 0;
+        for (uint32_t i = 0; i <= 32; i++) {
+            REQUIRE(kon::popcount(value) == i);
+            REQUIRE(kon::popcount(~value) == 32 - i);
+            value |= (static_cast<uint32_t>(1) << i);
+        }
+    }
+    SECTION("uint32_t") {
+        uint64_t value = 1;
+        REQUIRE(kon::popcount(value) == 1);
+        value = 0;
+        REQUIRE(kon::popcount(value) == 0);
+        value = ~value;
+        REQUIRE(kon::popcount(value) == 64);
+        value = 0xEF0;
+        REQUIRE(kon::popcount(~value) == (64 - 7));
+        value = 0;
+        for (uint32_t i = 0; i <= 64; i++) {
+            REQUIRE(kon::popcount(value) == i);
+            REQUIRE(kon::popcount(~value) == 64 - i);
+            value |= (static_cast<uint64_t>(1) << i);
+        }
+    }
+}
+
 TEST_CASE("bit_mask", "[bit]") {
     STATIC_REQUIRE(kon::bit_mask<uint8_t>(7, 0) == 0b1111'1111);
     STATIC_REQUIRE(kon::bit_mask<uint8_t>(7, 1) == 0b1111'1110);
