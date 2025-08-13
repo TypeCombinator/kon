@@ -73,9 +73,40 @@ constexpr int popcount(T x) noexcept {
     }
 }
 
+// T: uint8_t, pos: 3 --> 1111_0000
+template <typename T>
+static constexpr T lsb_imask(unsigned char pos) noexcept {
+    return (~static_cast<T>(0) << (pos + 1));
+}
+
+// T: uint8_t, pos: 3 --> 0000_1111
+template <typename T>
+static constexpr T lsb_mask(unsigned char pos) noexcept {
+    return (static_cast<T>(1) << (pos + 1)) - 1;
+}
+
+// T: uint8_t, pos: 3 --> 1111_1000
+template <typename T>
+static constexpr T msb_mask(unsigned char pos) noexcept {
+    return (~static_cast<T>(0)) << pos;
+}
+
+// T: uint8_t, pos: 3 --> 0000_0111
+template <typename T>
+static constexpr T msb_imask(unsigned char pos) noexcept {
+    return (static_cast<T>(1) << pos) - 1;
+}
+
+// T: uint8_t, msb: 6, lsb: 3 --> 0111_1000 (<= 1000_0000 ^ 1111_1000)
 template <typename T>
 static constexpr T bit_mask(unsigned char msb, unsigned char lsb) noexcept {
-    return (~static_cast<T>(0) << (msb + 1)) ^ (~static_cast<T>(0) << lsb);
+    return msb_mask<T>(msb + 1) ^ msb_mask<T>(lsb);
+}
+
+// T: uint8_t, msb: 6, lsb: 3 --> 1000_0111 (<= 1000_0000 | 0000_0111)
+template <typename T>
+static constexpr T bit_imask(unsigned char msb, unsigned char lsb) noexcept {
+    return msb_mask<T>(msb + 1) | msb_imask<T>(lsb);
 }
 
 } // namespace kon
