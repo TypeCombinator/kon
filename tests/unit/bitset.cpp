@@ -176,8 +176,8 @@ TEST_CASE("run time bitset", "[bitset]") {
     kon::bitset<23, uint8_t> bitmap;
     kon::bitset<24, uint8_t> aligned_bitmap;
 
-    REQUIRE(bitmap.storage_size == 3);
-    REQUIRE(bitmap.storage_element_bit_width == 8);
+    REQUIRE(bitmap.element_number == 3);
+    REQUIRE(bitmap.element_bit_width == 8);
     bitmap.set().flip(23);
     REQUIRE(bitmap.data[0] == 0xFF);
     REQUIRE(bitmap.data[1] == 0xFF);
@@ -273,5 +273,76 @@ TEST_CASE("run time bitset", "[bitset]") {
 
         aligned_bitmap.set().flip(18, 6);
         REQUIRE(aligned_bitmap.count() == aligned_bitmap.size() - 13);
+    }
+
+    kon::bitset<23, uint8_t> bitmap_other;
+
+    SECTION("equal") {
+        bitmap.reset().set(23).set(18, 6);
+        bitmap_other.reset().flip(18, 6);
+        REQUIRE(bitmap == bitmap_other);
+        bitmap_other.flip(10);
+        REQUIRE(bitmap != bitmap_other);
+    }
+
+    SECTION("mask") {
+        auto mask = kon::bitset<23, uint8_t>::mask(18, 6);
+        REQUIRE(mask.data[0] == 0b1100'0000);
+        REQUIRE(mask.data[1] == 0xFF);
+        REQUIRE(mask.data[2] == 0b0000'0111);
+
+        mask = kon::bitset<23, uint8_t>::mask(11, 9);
+        REQUIRE(mask.data[0] == 0);
+        REQUIRE(mask.data[1] == 0b0000'1110);
+        REQUIRE(mask.data[2] == 0);
+    }
+
+    SECTION("imask") {
+        auto mask = kon::bitset<23, uint8_t>::imask(18, 6);
+        REQUIRE(mask.data[0] == 0b0011'1111);
+        REQUIRE(mask.data[1] == 0);
+        REQUIRE(mask.data[2] == 0b1111'1000);
+
+        mask = kon::bitset<23, uint8_t>::imask(11, 9);
+        REQUIRE(mask.data[0] == 0xFF);
+        REQUIRE(mask.data[1] == 0b1111'0001);
+        REQUIRE(mask.data[2] == 0xFF);
+    }
+    SECTION("left shift") {
+        bitmap = {0x12, 0x34, 0x56};
+        bitmap <<= 1;
+        REQUIRE(bitmap.data[0] == 0x24);
+        REQUIRE(bitmap.data[1] == 0x68);
+        REQUIRE(bitmap.data[2] == 0xAC);
+
+        bitmap <<= 7;
+        REQUIRE(bitmap.data[0] == 0);
+        REQUIRE(bitmap.data[1] == 0x12);
+        REQUIRE(bitmap.data[2] == 0x34);
+
+        bitmap = {0x12, 0x34, 0x56};
+        bitmap <<= 8;
+        REQUIRE(bitmap.data[0] == 0);
+        REQUIRE(bitmap.data[1] == 0x12);
+        REQUIRE(bitmap.data[2] == 0x34);
+    }
+
+    SECTION("right shift") {
+        bitmap = {0x24, 0x68, 0xAC};
+        bitmap >>= 1;
+        REQUIRE(bitmap.data[0] == 0x12);
+        REQUIRE(bitmap.data[1] == 0x34);
+        REQUIRE(bitmap.data[2] == 0x56);
+
+        bitmap >>= 7;
+        REQUIRE(bitmap.data[0] == 0x68);
+        REQUIRE(bitmap.data[1] == 0xAC);
+        REQUIRE(bitmap.data[2] == 0x00);
+
+        bitmap = {0x24, 0x68, 0xAC};
+        bitmap >>= 8;
+        REQUIRE(bitmap.data[0] == 0x68);
+        REQUIRE(bitmap.data[1] == 0xAC);
+        REQUIRE(bitmap.data[2] == 0x00);
     }
 }
