@@ -91,12 +91,12 @@ class bitset {
     T data[element_number];
 
     [[nodiscard]]
-    constexpr std::size_t size() const noexcept {
+    static constexpr std::size_t size() noexcept {
         return N;
     }
 
     constexpr bitset &set() noexcept {
-        for (std::size_t i = 0; i < element_number; ++i) {
+        for (std::size_t i = 0; i < element_number; i++) {
             data[i] = ~static_cast<T>(0);
         }
         return *this;
@@ -126,7 +126,7 @@ class bitset {
     }
 
     constexpr bitset &reset() noexcept {
-        for (std::size_t i = 0; i < element_number; ++i) {
+        for (std::size_t i = 0; i < element_number; i++) {
             data[i] = 0;
         }
         return *this;
@@ -156,7 +156,7 @@ class bitset {
     }
 
     constexpr bitset &flip() noexcept {
-        for (std::size_t i = 0; i < element_number; ++i) {
+        for (std::size_t i = 0; i < element_number; i++) {
             data[i] = ~data[i];
         }
         return *this;
@@ -223,20 +223,20 @@ class bitset {
         std::size_t count = 0;
         std::size_t i = 0;
         for (; i < (element_number - 1); i++) {
-            count += popcount(data[i]);
+            count += kon::popcount(data[i]);
         }
-        return count + popcount(data[i] & last_mask);
+        return count + kon::popcount(data[i] & last_mask);
     }
 
     [[nodiscard]]
-    constexpr bool operator[](std::size_t pos) const {
+    constexpr bool operator[](std::size_t pos) const noexcept {
         return (data[pos_to_y(pos)] & (static_cast<T>(1) << pos_to_x(pos))) != 0;
     }
 
     [[nodiscard]]
-    friend constexpr auto operator==(const bitset &lhs, const bitset &rhs) -> bool {
+    friend constexpr bool operator==(const bitset &lhs, const bitset &rhs) noexcept {
         std::size_t i = 0;
-        for (; i < (element_number - 1); ++i) {
+        for (; i < (element_number - 1); i++) {
             if (lhs.data[i] != rhs.data[i]) {
                 return false;
             }
@@ -245,11 +245,60 @@ class bitset {
     }
 
     [[nodiscard]]
-    friend constexpr auto operator!=(const bitset &lhs, const bitset &rhs) -> bool {
+    friend constexpr bool operator!=(const bitset &lhs, const bitset &rhs) noexcept {
         return not(lhs == rhs);
     }
 
-    constexpr bitset &operator<<=(std::size_t pos) {
+    [[nodiscard]]
+    constexpr bitset operator<<(std::size_t pos) const noexcept {
+        bitset bs;
+        const auto start = pos_to_y(pos);
+        std::size_t i = 0;
+        for (; i < start; i++) {
+            bs.data[i] = 0;
+        }
+        pos = pos_to_x(pos);
+        if (pos == 0) { // Aligned?
+            for (; i < element_number; i++) {
+                bs.data[i] = data[i - start];
+            }
+        } else {
+            const auto shift = element_bit_width - pos;
+            T lsb{};
+            for (; i < element_number; i++) {
+                T e = data[i - start];
+                bs.data[i] = (e << pos) | lsb;
+                lsb = e >> shift;
+            }
+        }
+        return bs;
+    }
+
+    [[nodiscard]]
+    constexpr bitset operator>>(std::size_t pos) const noexcept {
+        bitset bs;
+        const auto start = pos_to_y(pos);
+        std::size_t i = start;
+
+        pos = pos_to_x(pos);
+        if (pos == 0) { // Aligned?
+            for (; i < element_number; i++) {
+                bs.data[i - start] = data[i];
+            }
+        } else {
+            const auto shift = element_bit_width - pos;
+            for (; i < (element_number - 1); i++) {
+                bs.data[i - start] = (data[i] >> pos) | (data[i + 1] << shift);
+            }
+            bs.data[i - start] = (data[i] >> pos);
+        }
+        for (i = element_number - start; i < element_number; i++) {
+            bs.data[i] = 0;
+        }
+        return bs;
+    }
+
+    constexpr bitset &operator<<=(std::size_t pos) noexcept {
         auto dst = element_number - 1;
         const auto start = dst - pos_to_y(pos);
 
@@ -262,7 +311,7 @@ class bitset {
             const auto shift = element_bit_width - pos;
             for (auto i = start; i > 0; i--) {
                 data[dst] = data[i] << pos;
-                data[dst--] |= data[i - 1] >> shift;
+                data[dst--] |= (data[i - 1] >> shift);
             }
         }
         data[dst] = data[0] << pos;
@@ -272,8 +321,8 @@ class bitset {
         return *this;
     }
 
-    constexpr bitset &operator>>=(std::size_t pos) {
-        auto dst = 0;
+    constexpr bitset &operator>>=(std::size_t pos) noexcept {
+        std::size_t dst = 0;
         const auto start = pos_to_y(pos);
 
         pos = pos_to_x(pos);
@@ -293,6 +342,73 @@ class bitset {
             data[dst++] = 0;
         }
         return *this;
+    }
+
+    constexpr bitset &operator&=(bitset &other) noexcept {
+        // if (&other == this) {
+        //     return *this;
+        // }
+        for (std::size_t i = 0; i < element_number; i++) {
+            data[i] &= other.data[i];
+        }
+        return *this;
+    }
+
+    constexpr bitset &operator|=(const bitset &other) noexcept {
+        // if (&other == this) {
+        //     return *this;
+        // }
+        for (std::size_t i = 0; i < element_number; i++) {
+            data[i] |= other.data[i];
+        }
+        return *this;
+    }
+
+    constexpr bitset &operator^=(const bitset &other) noexcept {
+        // if (&other == this) {
+        //     this->reset();
+        //     return *this;
+        // }
+        for (std::size_t i = 0; i < element_number; i++) {
+            data[i] ^= other.data[i];
+        }
+        return *this;
+    }
+
+    [[nodiscard]]
+    constexpr bitset operator~() const noexcept {
+        bitset bs;
+        for (std::size_t i = 0; i < element_number; i++) {
+            bs.data[i] = ~data[i];
+        }
+        return bs;
+    }
+
+    [[nodiscard]]
+    friend constexpr bitset operator&(const bitset &lhs, const bitset &rhs) noexcept {
+        bitset bs;
+        for (std::size_t i = 0; i < element_number; i++) {
+            bs.data[i] = lhs.data[i] & rhs.data[i];
+        }
+        return bs;
+    }
+
+    [[nodiscard]]
+    friend constexpr bitset operator|(const bitset &lhs, const bitset &rhs) noexcept {
+        bitset bs;
+        for (std::size_t i = 0; i < element_number; i++) {
+            bs.data[i] = lhs.data[i] | rhs.data[i];
+        }
+        return bs;
+    }
+
+    [[nodiscard]]
+    friend constexpr bitset operator^(const bitset &lhs, const bitset &rhs) noexcept {
+        bitset bs;
+        for (std::size_t i = 0; i < element_number; i++) {
+            bs.data[i] = lhs.data[i] ^ rhs.data[i];
+        }
+        return bs;
     }
 
     static constexpr bitset mask(std::size_t msb, std::size_t lsb) noexcept {
