@@ -167,6 +167,54 @@ class bitset {
     }
 
     [[nodiscard]]
+    constexpr std::size_t countr_zero() const noexcept {
+        std::size_t count = 0;
+        std::size_t i = 0;
+        for (; i < (element_number - 1); i++) {
+            if (data[i] == 0) {
+                count += element_bit_width;
+            } else {
+                return count + kon::countr_zero<T, true>(data[i]);
+            }
+        }
+        constexpr auto nx = pos_to_x(N);
+        if constexpr (nx == 0) { // Aligned?
+            return count + kon::countr_zero(data[i]);
+        } else {
+            return count + kon::countr_zero<T, true>(data[i] | kon::msb_mask<T>(nx));
+        }
+    }
+
+    [[nodiscard]]
+    constexpr std::size_t countl_zero() const noexcept {
+        constexpr auto nx = pos_to_x(N);
+
+        std::size_t count;
+        T e = data[element_number - 1];
+        if constexpr (nx == 0) {
+            if (e != 0) {
+                return kon::countl_zero<T, true>(e);
+            }
+            count = element_bit_width;
+        } else {
+            e &= kon::lsb_mask<T>(nx);
+            if (e != 0) {
+                return kon::countl_zero<T, true>(e) - (element_bit_width - nx);
+            }
+            count = nx;
+        }
+        for (auto i = element_number - 1; i > 0; i--) {
+            e = data[i - 1];
+            if (e == 0) {
+                count += element_bit_width;
+            } else {
+                return count + kon::countl_zero<T, true>(e);
+            }
+        }
+        return count;
+    }
+
+    [[nodiscard]]
     constexpr bool operator[](std::size_t pos) const noexcept {
         return (data[pos_to_y(pos)] & (static_cast<T>(1) << pos_to_x(pos))) != 0;
     }
