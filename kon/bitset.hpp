@@ -33,6 +33,11 @@ class bitset {
         return N;
     }
 
+    [[nodiscard]]
+    static constexpr std::size_t capacity() noexcept {
+        return element_number * element_bit_width;
+    }
+
     constexpr bitset &set() noexcept {
         for (std::size_t i = 0; i < element_number; i++) {
             data[i] = ~static_cast<T>(0);
@@ -197,7 +202,7 @@ class bitset {
             }
             count = element_bit_width;
         } else {
-            e &= kon::lsb_mask<T>(nx);
+            e &= kon::msb_imask<T>(nx);
             if (e != 0) {
                 return kon::countl_zero<T, true>(e) - (element_bit_width - nx);
             }

@@ -1,9 +1,12 @@
 #include <kon/bitset.hpp>
-#include <catch2/catch_template_test_macros.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("run time bitset", "[bitset]") {
     kon::bitset<23, uint8_t> bitmap;
     kon::bitset<24, uint8_t> aligned_bitmap;
+
+    REQUIRE(bitmap.capacity() == 24);
+    REQUIRE(aligned_bitmap.capacity() == 24);
 
     REQUIRE(bitmap.element_number == 3);
     REQUIRE(bitmap.element_bit_width == 8);
@@ -299,7 +302,7 @@ TEST_CASE("run time bitset", "[bitset]") {
     }
 
     SECTION("countl_zero") {
-        bitmap.reset();
+        bitmap.reset().set(23);
         REQUIRE(bitmap.countl_zero() == bitmap.size());
         bitmap.set(10);
         REQUIRE(bitmap.countl_zero() == (23 - 10 - 1));
