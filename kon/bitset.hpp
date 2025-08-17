@@ -71,29 +71,24 @@ class bit_reverse_iterator {
     T m_x;
 };
 
-enum class bitset_mask_t {
-};
-constexpr auto bitset_mask = bitset_mask_t{};
-
 // Aggregate bitset
 template <std::size_t N, typename T = std::uint32_t>
 class bitset {
    public:
-    static constexpr std::size_t storage_element_bit_width = sizeof(T) * 8;
-    static constexpr std::size_t storage_size =
-        (N + storage_element_bit_width - 1) / storage_element_bit_width;
+    static constexpr std::size_t element_bit_width = sizeof(T) * 8;
+    static constexpr std::size_t element_number = (N + element_bit_width - 1) / element_bit_width;
 
     static constexpr std::size_t pos_to_x(std::size_t pos) noexcept {
-        return pos % storage_element_bit_width;
+        return pos % element_bit_width;
     }
 
     static constexpr std::size_t pos_to_y(std::size_t pos) noexcept {
-        return pos / storage_element_bit_width;
+        return pos / element_bit_width;
     }
 
-    static constexpr auto last_mask = lsb_mask<T>(pos_to_x(N - 1));
+    static constexpr auto last_mask = kon::lsb_mask<T>(pos_to_x(N - 1));
 
-    T data[storage_size];
+    T data[element_number];
 
     [[nodiscard]]
     constexpr std::size_t size() const noexcept {
@@ -101,7 +96,7 @@ class bitset {
     }
 
     constexpr bitset &set() noexcept {
-        for (std::size_t i = 0; i < storage_size; ++i) {
+        for (std::size_t i = 0; i < element_number; ++i) {
             data[i] = ~static_cast<T>(0);
         }
         return *this;
@@ -114,24 +109,24 @@ class bitset {
 
     constexpr bitset &set(std::size_t msb, std::size_t lsb) noexcept {
         auto ly = pos_to_y(lsb);
-        auto lx = pos_to_x(lsb);
+        const auto lx = pos_to_x(lsb);
 
-        auto my = pos_to_y(msb);
-        auto mx = pos_to_x(msb);
+        const auto my = pos_to_y(msb);
+        const auto mx = pos_to_x(msb);
         if (ly == my) {
-            data[ly] |= bit_mask<T>(mx, lx);
+            data[ly] |= kon::bit_mask<T>(mx, lx);
             return *this;
         }
-        data[ly] |= msb_mask<T>(lx);
+        data[ly] |= kon::msb_mask<T>(lx);
         for (ly++; ly < my; ly++) {
             data[ly] = ~static_cast<T>(0);
         }
-        data[my] |= lsb_mask<T>(mx);
+        data[my] |= kon::lsb_mask<T>(mx);
         return *this;
     }
 
     constexpr bitset &reset() noexcept {
-        for (std::size_t i = 0; i < storage_size; ++i) {
+        for (std::size_t i = 0; i < element_number; ++i) {
             data[i] = 0;
         }
         return *this;
@@ -161,7 +156,7 @@ class bitset {
     }
 
     constexpr bitset &flip() noexcept {
-        for (std::size_t i = 0; i < storage_size; ++i) {
+        for (std::size_t i = 0; i < element_number; ++i) {
             data[i] = ~data[i];
         }
         return *this;
@@ -174,26 +169,26 @@ class bitset {
 
     constexpr bitset &flip(std::size_t msb, std::size_t lsb) noexcept {
         auto ly = pos_to_y(lsb);
-        auto lx = pos_to_x(lsb);
+        const auto lx = pos_to_x(lsb);
 
-        auto my = pos_to_y(msb);
-        auto mx = pos_to_x(msb);
+        const auto my = pos_to_y(msb);
+        const auto mx = pos_to_x(msb);
         if (ly == my) {
-            data[ly] ^= bit_mask<T>(mx, lx);
+            data[ly] ^= kon::bit_mask<T>(mx, lx);
             return *this;
         }
-        data[ly] ^= msb_mask<T>(lx);
+        data[ly] ^= kon::msb_mask<T>(lx);
         for (ly++; ly < my; ly++) {
             data[ly] ^= (~static_cast<T>(0));
         }
-        data[my] ^= lsb_mask<T>(mx);
+        data[my] ^= kon::lsb_mask<T>(mx);
         return *this;
     }
 
     [[nodiscard]]
     constexpr bool all() const noexcept {
         std::size_t i = 0;
-        for (; i < storage_size - 1; i++) {
+        for (; i < (element_number - 1); i++) {
             if ((~data[i]) == 0) {
                 return false;
             }
@@ -204,7 +199,7 @@ class bitset {
     [[nodiscard]]
     constexpr bool any() const noexcept {
         std::size_t i = 0;
-        for (; i < storage_size - 1; i++) {
+        for (; i < (element_number - 1); i++) {
             if (data[i]) {
                 return true;
             }
@@ -215,7 +210,7 @@ class bitset {
     [[nodiscard]]
     constexpr bool none() const noexcept {
         std::size_t i = 0;
-        for (; i < storage_size - 1; i++) {
+        for (; i < (element_number - 1); i++) {
             if (data[i]) {
                 return false;
             }
@@ -227,7 +222,7 @@ class bitset {
     constexpr std::size_t count() noexcept {
         std::size_t count = 0;
         std::size_t i = 0;
-        for (; i < storage_size - 1; i++) {
+        for (; i < (element_number - 1); i++) {
             count += popcount(data[i]);
         }
         return count + popcount(data[i] & last_mask);
@@ -241,7 +236,7 @@ class bitset {
     [[nodiscard]]
     friend constexpr auto operator==(const bitset &lhs, const bitset &rhs) -> bool {
         std::size_t i = 0;
-        for (; i < storage_size - 1; ++i) {
+        for (; i < (element_number - 1); ++i) {
             if (lhs.data[i] != rhs.data[i]) {
                 return false;
             }
@@ -251,12 +246,105 @@ class bitset {
 
     [[nodiscard]]
     friend constexpr auto operator!=(const bitset &lhs, const bitset &rhs) -> bool {
-        for (std::size_t i = 0; i < storage_size; ++i) {
-            if (lhs.data[i] != rhs.data[i]) {
-                return true;
+        return not(lhs == rhs);
+    }
+
+    constexpr bitset &operator<<=(std::size_t pos) {
+        auto dst = element_number - 1;
+        const auto start = dst - pos_to_y(pos);
+
+        pos = pos_to_x(pos);
+        if (pos == 0) { // Aligned?
+            for (auto i = start; i > 0; i--) {
+                data[dst--] = data[i];
+            }
+        } else {
+            const auto shift = element_bit_width - pos;
+            for (auto i = start; i > 0; i--) {
+                data[dst] = data[i] << pos;
+                data[dst--] |= data[i - 1] >> shift;
             }
         }
-        return false;
+        data[dst] = data[0] << pos;
+        while (dst > 0) {
+            data[--dst] = 0;
+        }
+        return *this;
+    }
+
+    constexpr bitset &operator>>=(std::size_t pos) {
+        auto dst = 0;
+        const auto start = pos_to_y(pos);
+
+        pos = pos_to_x(pos);
+        if (pos == 0) { // Aligned?
+            for (auto i = start; i < (element_number - 1); i++) {
+                data[dst++] = data[i];
+            }
+        } else {
+            auto const shift = element_bit_width - pos;
+            for (auto i = start; i < (element_number - 1); i++) {
+                data[dst] = data[i] >> pos;
+                data[dst++] |= (data[i + 1] << shift);
+            }
+        }
+        data[dst++] = data[element_number - 1] >> pos;
+        while (dst < element_number) {
+            data[dst++] = 0;
+        }
+        return *this;
+    }
+
+    static constexpr bitset mask(std::size_t msb, std::size_t lsb) noexcept {
+        const auto ly = pos_to_y(lsb);
+        const auto lx = pos_to_x(lsb);
+
+        const auto my = pos_to_y(msb);
+        const auto mx = pos_to_x(msb);
+        bitset bs;
+        std::size_t i = 0;
+        for (; i < ly; i++) {
+            bs.data[i] = 0;
+        }
+        if (ly == my) {
+            bs.data[i++] = kon::bit_mask<T>(mx, lx);
+        } else {
+            bs.data[i++] = kon::msb_mask<T>(lx);
+            for (; i < my; i++) {
+                bs.data[i] = ~static_cast<T>(0);
+            }
+            bs.data[i++] = kon::lsb_mask<T>(mx);
+        }
+        for (; i < element_number; i++) {
+            bs.data[i] = 0;
+        }
+        return bs;
+    }
+
+    static constexpr bitset imask(std::size_t msb, std::size_t lsb) noexcept {
+        auto ly = pos_to_y(lsb);
+        auto lx = pos_to_x(lsb);
+
+        auto my = pos_to_y(msb);
+        auto mx = pos_to_x(msb);
+        bitset bs;
+        std::size_t i = 0;
+        for (; i < ly; i++) {
+            bs.data[i] = ~static_cast<T>(0);
+        }
+        if (ly == my) {
+            bs.data[i++] = kon::bit_imask<T>(mx, lx);
+        } else {
+            bs.data[i++] = kon::msb_imask<T>(lx);
+            for (; i < my; i++) {
+                bs.data[i] = static_cast<T>(0);
+            }
+            bs.data[i++] = kon::lsb_imask<T>(mx);
+        }
+        for (; i < element_number; i++) {
+            bs.data[i] = ~static_cast<T>(0);
+        }
+        return bs;
     }
 };
 
