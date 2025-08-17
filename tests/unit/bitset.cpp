@@ -171,3 +171,107 @@ TEMPLATE_TEST_CASE(
         }
     }
 }
+
+TEST_CASE("run time bitset", "[bitset]") {
+    kon::bitset<23, uint8_t> bitmap;
+    kon::bitset<24, uint8_t> aligned_bitmap;
+
+    REQUIRE(bitmap.storage_size == 3);
+    REQUIRE(bitmap.storage_element_bit_width == 8);
+    bitmap.set().flip(23);
+    REQUIRE(bitmap.data[0] == 0xFF);
+    REQUIRE(bitmap.data[1] == 0xFF);
+    REQUIRE(bitmap.data[2] == 0x7F);
+    REQUIRE(bitmap.all());
+
+    bitmap.reset().flip(23);
+    REQUIRE(bitmap.data[0] == 0);
+    REQUIRE(bitmap.data[1] == 0);
+    REQUIRE(bitmap.data[2] == 0x80);
+    REQUIRE(bitmap.none());
+    REQUIRE(!bitmap.any());
+
+    SECTION("set") {
+        bitmap.reset().set(12);
+        REQUIRE(bitmap.data[0] == 0);
+        REQUIRE(bitmap.data[1] == 0b0001'0000);
+        REQUIRE(bitmap.data[2] == 0);
+
+        bitmap.reset().set(14, 11);
+        REQUIRE(bitmap.data[0] == 0);
+        REQUIRE(bitmap.data[1] == 0b0111'1000);
+        REQUIRE(bitmap.data[2] == 0);
+
+        bitmap.reset().set(18, 6);
+        REQUIRE(bitmap.data[0] == 0b1100'0000);
+        REQUIRE(bitmap.data[1] == 0xFF);
+        REQUIRE(bitmap.data[2] == 0b0000'0111);
+    }
+
+    SECTION("reset") {
+        bitmap.set().reset(12);
+        REQUIRE(bitmap.data[0] == 0xFF);
+        REQUIRE(bitmap.data[1] == 0b1110'1111);
+        REQUIRE(bitmap.data[2] == 0xFF);
+
+        bitmap.set().reset(14, 11);
+        REQUIRE(bitmap.data[0] == 0xFF);
+        REQUIRE(bitmap.data[1] == 0b1000'0111);
+        REQUIRE(bitmap.data[2] == 0xFF);
+
+        bitmap.set().reset(18, 6);
+        REQUIRE(bitmap.data[0] == 0b0011'1111);
+        REQUIRE(bitmap.data[1] == 0);
+        REQUIRE(bitmap.data[2] == 0b1111'1000);
+    }
+
+    SECTION("flip") {
+        bitmap.set().flip(12);
+        REQUIRE(bitmap.data[0] == 0xFF);
+        REQUIRE(bitmap.data[1] == 0b1110'1111);
+        REQUIRE(bitmap.data[2] == 0xFF);
+
+        bitmap.flip(12);
+        REQUIRE(bitmap.data[0] == 0xFF);
+        REQUIRE(bitmap.data[1] == 0xFF);
+        REQUIRE(bitmap.data[2] == 0xFF);
+
+
+        bitmap.set().flip(14, 11);
+        REQUIRE(bitmap.data[0] == 0xFF);
+        REQUIRE(bitmap.data[1] == 0b1000'0111);
+        REQUIRE(bitmap.data[2] == 0xFF);
+
+        bitmap.flip(14, 11);
+        REQUIRE(bitmap.data[0] == 0xFF);
+        REQUIRE(bitmap.data[1] == 0xFF);
+        REQUIRE(bitmap.data[2] == 0xFF);
+
+
+        bitmap.set().flip(18, 6);
+        REQUIRE(bitmap.data[0] == 0b0011'1111);
+        REQUIRE(bitmap.data[1] == 0);
+        REQUIRE(bitmap.data[2] == 0b1111'1000);
+
+        bitmap.flip(18, 6);
+        REQUIRE(bitmap.data[0] == 0xFF);
+        REQUIRE(bitmap.data[1] == 0xFF);
+        REQUIRE(bitmap.data[2] == 0xFF);
+    }
+
+    SECTION("count") {
+        bitmap.set();
+        REQUIRE(bitmap.count() == 23);
+        bitmap.reset();
+        REQUIRE(bitmap.count() == 0);
+
+        bitmap.flip(18, 6);
+        REQUIRE(bitmap.count() == 13);
+
+        bitmap.set().flip(18, 6);
+        REQUIRE(bitmap.count() == bitmap.size() - 13);
+
+        aligned_bitmap.set().flip(18, 6);
+        REQUIRE(aligned_bitmap.count() == aligned_bitmap.size() - 13);
+    }
+}
