@@ -28,11 +28,14 @@ constexpr int countl_zero(T x) noexcept {
             return sizeof(x) * 8;
         }
     }
-    if constexpr (sizeof(x) <= sizeof(unsigned)) {
+    if constexpr (sizeof(x) < sizeof(unsigned)) {
+        constexpr auto offset = (sizeof(unsigned) - sizeof(x)) * 8;
+        return __builtin_clz(x) - offset;
+    } else if constexpr (sizeof(x) == sizeof(unsigned)) {
         return __builtin_clz(x);
-    } else if constexpr (sizeof(x) <= sizeof(unsigned long)) {
+    } else if constexpr (sizeof(x) == sizeof(unsigned long)) {
         return __builtin_clzl(x);
-    } else if constexpr (sizeof(x) <= sizeof(unsigned long long)) {
+    } else if constexpr (sizeof(x) == sizeof(unsigned long long)) {
         return __builtin_clzll(x);
     } else {
         static_assert(sizeof(x) <= sizeof(unsigned long long));
