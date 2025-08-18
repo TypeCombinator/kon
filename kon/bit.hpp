@@ -73,6 +73,69 @@ constexpr int popcount(T x) noexcept {
     }
 }
 
+// It's suitable for sparse data.
+template <typename T, typename F>
+constexpr void bit_for_each(T x, F &&f) {
+    constexpr T one = 1;
+    while (x != 0) [[likely]] {
+        unsigned char i = countr_zero<T, true>(x);
+        f(i);
+        x &= (~(one << i));
+    }
+}
+
+template <typename T, typename F>
+constexpr void bit_reverse_for_each(T x, F &&f) {
+    constexpr T mask = ~(static_cast<T>(1) << (sizeof(T) * 8 - 1));
+    while (x != 0) [[likely]] {
+        unsigned char i = countl_zero<T, true>(x);
+        f(i);
+        x &= (mask >> i);
+    }
+}
+
+template <typename T>
+class bit_iterator {
+   public:
+    bit_iterator(T x) noexcept
+        : m_x{x} {
+    }
+
+    template <typename IT>
+    bool next(IT &index) noexcept {
+        constexpr T one = 1;
+        if (m_x == 0) [[unlikely]] {
+            return false;
+        }
+        index = countr_zero<T, true>(m_x);
+        m_x &= (~(one << index));
+        return true;
+    }
+   private:
+    T m_x;
+};
+
+template <typename T>
+class bit_reverse_iterator {
+   public:
+    bit_reverse_iterator(T x) noexcept
+        : m_x{x} {
+    }
+
+    template <typename IT>
+    bool next(IT &index) noexcept {
+        constexpr T mask = ~(static_cast<T>(1) << (sizeof(T) * 8 - 1));
+        if (m_x == 0) [[unlikely]] {
+            return false;
+        }
+        index = countl_zero<T, true>(m_x);
+        m_x &= (mask >> index);
+        return true;
+    }
+   private:
+    T m_x;
+};
+
 // T: uint8_t, pos: 3 --> 1111_0000
 template <typename T>
 static constexpr T lsb_imask(unsigned char pos) noexcept {
