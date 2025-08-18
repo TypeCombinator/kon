@@ -285,4 +285,33 @@ TEST_CASE("run time bitset", "[bitset]") {
         bitmap = bs ^ bitmap;
         REQUIRE(bitmap == ~bs);
     }
+
+    SECTION("countr_zero") {
+        bitmap.reset();
+        REQUIRE(bitmap.countr_zero() == bitmap.size());
+        bitmap.set(10);
+        REQUIRE(bitmap.countr_zero() == 10);
+
+        kon::bitset<24, uint8_t> bs{};
+        REQUIRE(bs.countr_zero() == bs.size());
+        bs.set(19);
+        REQUIRE(bs.countr_zero() == 19);
+    }
+
+    SECTION("countl_zero") {
+        bitmap.reset();
+        REQUIRE(bitmap.countl_zero() == bitmap.size());
+        bitmap.set(10);
+        REQUIRE(bitmap.countl_zero() == (23 - 10 - 1));
+        bitmap.set(19);
+        REQUIRE(bitmap.countl_zero() == (23 - 19 - 1));
+
+
+        kon::bitset<24, uint8_t> bs{};
+        REQUIRE(bs.countr_zero() == bs.size());
+        bs.set(10);
+        REQUIRE(bs.countl_zero() == (24 - 10 - 1));
+        bs.set(19);
+        REQUIRE(bs.countl_zero() == (24 - 19 - 1));
+    }
 }
