@@ -285,6 +285,14 @@ TEST_CASE("run time bitset", "[bitset]") {
         REQUIRE(bitmap != bitmap_other);
     }
 
+    SECTION("bitwise not") {
+        bitmap.reset();
+        bitmap = ~bitmap;
+        REQUIRE(bitmap.data[0] == 0xFF);
+        REQUIRE(bitmap.data[1] == 0xFF);
+        REQUIRE(bitmap.data[2] == 0xFF);
+    }
+
     SECTION("mask") {
         auto mask = kon::bitset<23, uint8_t>::mask(18, 6);
         REQUIRE(mask.data[0] == 0b1100'0000);
@@ -308,7 +316,8 @@ TEST_CASE("run time bitset", "[bitset]") {
         REQUIRE(mask.data[1] == 0b1111'0001);
         REQUIRE(mask.data[2] == 0xFF);
     }
-    SECTION("left shift") {
+
+    SECTION("left shift assign") {
         bitmap = {0x12, 0x34, 0x56};
         bitmap <<= 1;
         REQUIRE(bitmap.data[0] == 0x24);
@@ -327,7 +336,7 @@ TEST_CASE("run time bitset", "[bitset]") {
         REQUIRE(bitmap.data[2] == 0x34);
     }
 
-    SECTION("right shift") {
+    SECTION("right shift assign") {
         bitmap = {0x24, 0x68, 0xAC};
         bitmap >>= 1;
         REQUIRE(bitmap.data[0] == 0x12);
@@ -344,5 +353,107 @@ TEST_CASE("run time bitset", "[bitset]") {
         REQUIRE(bitmap.data[0] == 0x68);
         REQUIRE(bitmap.data[1] == 0xAC);
         REQUIRE(bitmap.data[2] == 0x00);
+    }
+
+    SECTION("left shift") {
+        kon::bitset<23, uint8_t> bs{0x12, 0x34, 0x56};
+        bitmap = (bs << 1);
+        REQUIRE(bitmap.data[0] == 0x24);
+        REQUIRE(bitmap.data[1] == 0x68);
+        REQUIRE(bitmap.data[2] == 0xAC);
+
+        bitmap = (bitmap << 7);
+        REQUIRE(bitmap.data[0] == 0);
+        REQUIRE(bitmap.data[1] == 0x12);
+        REQUIRE(bitmap.data[2] == 0x34);
+
+        bitmap = (bs << 8);
+        REQUIRE(bitmap.data[0] == 0);
+        REQUIRE(bitmap.data[1] == 0x12);
+        REQUIRE(bitmap.data[2] == 0x34);
+    }
+
+    SECTION("right shift") {
+        kon::bitset<23, uint8_t> bs{0x24, 0x68, 0xAC};
+        bitmap = (bs >> 1);
+        REQUIRE(bitmap.data[0] == 0x12);
+        REQUIRE(bitmap.data[1] == 0x34);
+        REQUIRE(bitmap.data[2] == 0x56);
+
+        bitmap = (bitmap >> 7);
+        REQUIRE(bitmap.data[0] == 0x68);
+        REQUIRE(bitmap.data[1] == 0xAC);
+        REQUIRE(bitmap.data[2] == 0x00);
+
+        bitmap = (bs >> 8);
+        REQUIRE(bitmap.data[0] == 0x68);
+        REQUIRE(bitmap.data[1] == 0xAC);
+        REQUIRE(bitmap.data[2] == 0x00);
+    }
+
+    SECTION("and assign") {
+        kon::bitset<23, uint8_t> bs{0x55, 0xAA, 0x55};
+        bitmap = {0xAA, 0x55, 0xAA};
+
+        bitmap &= bs;
+        REQUIRE(bitmap.data[0] == 0);
+        REQUIRE(bitmap.data[1] == 0);
+        REQUIRE(bitmap.data[2] == 0);
+    }
+
+    SECTION("or assign") {
+        kon::bitset<23, uint8_t> bs{0x55, 0xAA, 0x55};
+        bitmap = {0xAA, 0x55, 0xAA};
+
+        bitmap |= bs;
+        REQUIRE(bitmap.data[0] == 0xFF);
+        REQUIRE(bitmap.data[1] == 0xFF);
+        REQUIRE(bitmap.data[2] == 0xFF);
+    }
+
+    SECTION("xor assign") {
+        kon::bitset<23, uint8_t> bs{0x55, 0xAA, 0x55};
+        bitmap = {0xAA, 0x55, 0xAA};
+
+        bitmap ^= bs;
+        REQUIRE(bitmap.data[0] == 0xFF);
+        REQUIRE(bitmap.data[1] == 0xFF);
+        REQUIRE(bitmap.data[2] == 0xFF);
+
+        bitmap ^= bs;
+        REQUIRE(bitmap == ~bs);
+    }
+
+    SECTION("and") {
+        kon::bitset<23, uint8_t> bs{0x55, 0xAA, 0x55};
+        bitmap = {0xAA, 0x55, 0xAA};
+
+        bitmap = bs & bitmap;
+        REQUIRE(bitmap.data[0] == 0);
+        REQUIRE(bitmap.data[1] == 0);
+        REQUIRE(bitmap.data[2] == 0);
+    }
+
+    SECTION("or") {
+        kon::bitset<23, uint8_t> bs{0x55, 0xAA, 0x55};
+        bitmap = {0xAA, 0x55, 0xAA};
+
+        bitmap = bs | bitmap;
+        REQUIRE(bitmap.data[0] == 0xFF);
+        REQUIRE(bitmap.data[1] == 0xFF);
+        REQUIRE(bitmap.data[2] == 0xFF);
+    }
+
+    SECTION("xor") {
+        kon::bitset<23, uint8_t> bs{0x55, 0xAA, 0x55};
+        bitmap = {0xAA, 0x55, 0xAA};
+
+        bitmap = bs ^ bitmap;
+        REQUIRE(bitmap.data[0] == 0xFF);
+        REQUIRE(bitmap.data[1] == 0xFF);
+        REQUIRE(bitmap.data[2] == 0xFF);
+
+        bitmap = bs ^ bitmap;
+        REQUIRE(bitmap == ~bs);
     }
 }
