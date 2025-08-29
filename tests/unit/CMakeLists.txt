@@ -10,6 +10,7 @@ add_executable(kon_tests
     file_helper.cpp
     inerting.cpp
     maybe.cpp
+    scope.cpp
     shm.cpp
     spin_lock.cpp
     string_helper.cpp
