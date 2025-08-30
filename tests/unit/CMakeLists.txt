@@ -14,6 +14,7 @@ add_executable(kon_tests
     shm.cpp
     spin_lock.cpp
     string_helper.cpp
+    utility.cpp
     vlm_ring.cpp
 )
 
