@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: BSD 3-Clause
 
-#ifndef MD5_EF91EA4D_C9D5_4146_83F7_422D04457955
-#define MD5_EF91EA4D_C9D5_4146_83F7_422D04457955
+#ifndef HASH_MD5_EF91EA4D_C9D5_4146_83F7_422D04457955
+#define HASH_MD5_EF91EA4D_C9D5_4146_83F7_422D04457955
 // References:
 // [0]: http://www.ietf.org/rfc/rfc1321.txt
 #include <string>
