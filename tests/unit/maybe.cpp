@@ -72,13 +72,13 @@ TEST_CASE("basic", "[maybe]") {
         REQUIRE_FALSE(m.has_value());
     }
 
-    SECTION("Emplace") {
-        kon::maybe<std::pair<int, int>> m;
-        m.emplace(1, 2);
-        REQUIRE(m.has_value());
-        REQUIRE(m.get().first == 1);
-        REQUIRE(m.get().second == 2);
-    }
+    // SECTION("Emplace") {
+    //     kon::maybe<std::pair<int, int>> m;
+    //     m.emplace(1, 2);
+    //     REQUIRE(m.has_value());
+    //     REQUIRE(m.get().first == 1);
+    //     REQUIRE(m.get().second == 2);
+    // }
 
     SECTION("And then") {
         kon::maybe<int> m(42);

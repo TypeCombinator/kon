@@ -9,7 +9,9 @@
 #include <cmath>
 #include <utility>
 #include <functional>
+#include <kon/xt/attributes.hpp>
 
+// Experimental Code (WIP)
 namespace kon {
 
 template <typename T, typename = void>
@@ -73,7 +75,7 @@ class maybe {
     constexpr maybe() noexcept(std::is_nothrow_invocable_v<decltype(NT::make), T *>)
         requires(!is_default_nothing)
     {
-        NT::make(std::addressof(val));
+        NT::make(std::addressof(s.val));
     }
 
     constexpr maybe(nullopt_t) noexcept
@@ -84,14 +86,14 @@ class maybe {
     constexpr maybe(nullopt_t) noexcept(std::is_nothrow_invocable_v<decltype(NT::make), T *>)
         requires(!is_default_nothing)
     {
-        NT::make(std::addressof(val));
+        NT::make(std::addressof(s.val));
     }
 
     template <typename... Args>
     constexpr explicit maybe(std::in_place_t, Args &&...args) noexcept(
         std::is_nothrow_constructible_v<T, Args...>)
         requires std::is_constructible_v<T, Args...>
-        : val(std::forward<Args>(args)...) {
+        : s(std::forward<Args>(args)...) {
         if constexpr (is_default_nothing) {
             has = true;
         }
@@ -101,7 +103,7 @@ class maybe {
     constexpr explicit maybe(std::in_place_t, std::initializer_list<U> il, Args &&...args) noexcept(
         std::is_nothrow_constructible_v<T, std::initializer_list<U> &, Args &&...>)
         requires std::is_constructible_v<T, std::initializer_list<U> &, Args &&...>
-        : val(il, std::forward<Args>(args)...) {
+        : s(il, std::forward<Args>(args)...) {
         if constexpr (is_default_nothing) {
             has = true;
         }
@@ -112,11 +114,11 @@ class maybe {
     {
         if constexpr (is_default_nothing) {
             if (other.has) {
-                std::construct_at(std::addressof(val), other.val);
+                std::construct_at(std::addressof(s.val), other.s.val);
             }
             has = other.has;
         } else {
-            std::construct_at(std::addressof(val), other.val);
+            std::construct_at(std::addressof(s.val), other.s.val);
         }
     }
 
@@ -129,11 +131,11 @@ class maybe {
     {
         if constexpr (is_default_nothing) {
             if (other.has) {
-                std::construct_at(std::addressof(val), std::move(other.val));
+                std::construct_at(std::addressof(s.val), std::move(other.s.val));
             }
             has = other.has;
         } else {
-            std::construct_at(std::addressof(val), std::move(other.val));
+            std::construct_at(std::addressof(s.val), std::move(other.s.val));
         }
     }
 
@@ -155,7 +157,7 @@ class maybe {
         requires is_default_nothing
     {
         if (has) {
-            std::destroy_at(std::addressof(val));
+            std::destroy_at(std::addressof(s.val));
         }
         has = false;
         return *this;
@@ -165,7 +167,7 @@ class maybe {
         operator=(nullopt_t) noexcept(std::is_nothrow_invocable_v<decltype(&NT::reset), T &>)
         requires(!is_default_nothing)
     {
-        NT::reset(val);
+        NT::reset(s.val);
         return *this;
     }
 
@@ -182,9 +184,9 @@ class maybe {
         if (!other.has) {
             reset();
         } else if (has) {
-            val = other.val;
+            s.val = other.s.val;
         } else {
-            std::construct_at(std::addressof(val), other);
+            std::construct_at(std::addressof(s.val), other);
         }
         return *this;
     }
@@ -201,7 +203,7 @@ class maybe {
         if (!other.has) {
             reset();
         } else {
-            val = other.val;
+            s.val = other.s.val;
         }
         return *this;
     }
@@ -220,9 +222,9 @@ class maybe {
         if (!other.has) {
             reset();
         } else if (has) {
-            val = std::move(other.val);
+            s.val = std::move(other.s.val);
         } else {
-            std::construct_at(std::addressof(val), std::move(other.val));
+            std::construct_at(std::addressof(s.val), std::move(other.s.val));
         }
         return *this;
     }
@@ -236,7 +238,7 @@ class maybe {
         if (!other.has) {
             reset();
         } else {
-            val = std::move(other.val);
+            s.val = std::move(other.s.val);
         }
         return *this;
     }
@@ -249,7 +251,7 @@ class maybe {
         if constexpr (is_default_nothing) {
             return has;
         } else {
-            return !NT::has(val);
+            return !NT::has(s.val);
         }
     }
 
@@ -261,7 +263,7 @@ class maybe {
         requires is_default_nothing
     {
         if (has) {
-            std::destroy_at(std::addressof(val));
+            std::destroy_at(std::addressof(s.val));
         }
         has = false;
     }
@@ -269,19 +271,19 @@ class maybe {
     constexpr void reset(void) noexcept(std::is_nothrow_invocable_v<decltype(&NT::reset), T &>)
         requires(!is_default_nothing)
     {
-        NT::reset(val);
+        NT::reset(s.val);
     }
 
     constexpr T &get() & {
-        return val;
+        return s.val;
     }
 
     inline constexpr const T &get() const & {
-        return val;
+        return s.val;
     }
 
     constexpr T &&get() && {
-        return std::move(val);
+        return std::move(s.val);
     }
 
     template <typename... Args>
@@ -289,20 +291,20 @@ class maybe {
         std::is_nothrow_destructible_v<T> && std::is_nothrow_constructible_v<T, Args...>) {
         if constexpr (is_default_nothing) {
             if (has) {
-                std::destroy_at(std::addressof(val));
+                std::destroy_at(std::addressof(s.val));
             }
             has = true;
         } else {
-            std::destroy_at(std::addressof(val));
+            std::destroy_at(std::addressof(s.val));
         }
-        std::construct_at(std::addressof(val), std::forward<Args>(args)...);
+        std::construct_at(std::addressof(s.val), std::forward<Args>(args)...);
     }
 
     template <class F>
     constexpr auto and_then(F &&f) & {
         using U = std::invoke_result_t<F, T &>;
         if (has_value()) {
-            return std::invoke(std::forward<F>(f), val);
+            return std::invoke(std::forward<F>(f), s.val);
         } else {
             return std::remove_cvref_t<U>();
         }
@@ -312,7 +314,7 @@ class maybe {
     constexpr auto and_then(F &&f) && {
         using U = std::invoke_result_t<F, T &&>;
         if (has_value()) {
-            return std::invoke(std::forward<F>(f), std::move(val));
+            return std::invoke(std::forward<F>(f), std::move(s.val));
         } else {
             return std::remove_cvref_t<U>();
         }
@@ -322,7 +324,7 @@ class maybe {
     constexpr auto and_then(F &&f) const & {
         using U = std::invoke_result_t<F, const T &>;
         if (has_value()) {
-            return std::invoke(std::forward<F>(f), val);
+            return std::invoke(std::forward<F>(f), s.val);
         } else {
             return std::remove_cvref_t<U>();
         }
@@ -332,7 +334,7 @@ class maybe {
     constexpr auto and_then(F &&f) const && {
         using U = std::invoke_result_t<F, const T &&>;
         if (has_value()) {
-            return std::invoke(std::forward<F>(f), std::move(val));
+            return std::invoke(std::forward<F>(f), std::move(s.val));
         } else {
             return std::remove_cvref_t<U>();
         }
@@ -347,27 +349,24 @@ class maybe {
     {
         if constexpr (is_default_nothing) {
             if (has) {
-                std::destroy_at(std::addressof(val));
+                std::destroy_at(std::addressof(s.val));
                 // has = false;
             }
         } else {
-            std::destroy_at(std::addressof(val));
+            std::destroy_at(std::addressof(s.val));
         }
     }
 
    private:
-    struct empty0 { };
-
-    union {
+    union storage {
         T val;
-        [[no_unique_address]]
-        empty0 placeholder{};
     };
 
-    struct empty1 { };
+    KON_ATTR_NO_UNIQUE_ADDRESS storage s;
 
-    [[no_unique_address]]
-    std::conditional_t<is_default_nothing, bool, empty1> has;
+    struct empty { };
+
+    KON_ATTR_NO_UNIQUE_ADDRESS std::conditional_t<is_default_nothing, bool, empty> has;
 };
 
 } // namespace kon
