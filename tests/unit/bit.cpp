@@ -317,6 +317,9 @@ TEST_CASE("bit_mask", "[bit]") {
     STATIC_REQUIRE(kon::bit_mask<uint8_t>(6, 0) == 0b0111'1111);
     STATIC_REQUIRE(kon::bit_mask<uint8_t>(6, 1) == 0b0111'1110);
     STATIC_REQUIRE(kon::bit_mask<uint8_t>(4, 3) == 0b0001'1000);
+    for (std::size_t i{}; i < 8; i++) {
+        REQUIRE(kon::bit_mask<uint8_t>(i) == (1u << i));
+    }
 }
 
 TEST_CASE("bit_imask", "[bit]") {
@@ -325,6 +328,9 @@ TEST_CASE("bit_imask", "[bit]") {
     STATIC_REQUIRE(kon::bit_imask<uint8_t>(6, 0) == 0b1000'0000);
     STATIC_REQUIRE(kon::bit_imask<uint8_t>(6, 1) == 0b1000'0001);
     STATIC_REQUIRE(kon::bit_imask<uint8_t>(4, 3) == 0b1110'0111);
+    for (std::size_t i{}; i < 8; i++) {
+        REQUIRE(kon::bit_imask<uint8_t>(i) == static_cast<uint8_t>(~(1u << i)));
+    }
 }
 
 TEST_CASE("lsb_mask", "[bit]") {

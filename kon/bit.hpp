@@ -169,10 +169,20 @@ static constexpr T bit_mask(unsigned char msb, unsigned char lsb) noexcept {
     return msb_mask<T>(msb + 1) ^ msb_mask<T>(lsb);
 }
 
+template <typename T>
+static constexpr T bit_mask(unsigned char pos) noexcept {
+    return static_cast<T>(1) << pos;
+}
+
 // T: uint8_t, msb: 6, lsb: 3 --> 1000_0111 (<= 1000_0000 | 0000_0111)
 template <typename T>
 static constexpr T bit_imask(unsigned char msb, unsigned char lsb) noexcept {
     return msb_mask<T>(msb + 1) | msb_imask<T>(lsb);
+}
+
+template <typename T>
+static constexpr T bit_imask(unsigned char pos) noexcept {
+    return ~(static_cast<T>(1) << pos);
 }
 
 } // namespace kon
