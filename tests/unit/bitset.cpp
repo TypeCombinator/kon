@@ -292,6 +292,8 @@ TEST_CASE("run time bitset", "[bitset]") {
     SECTION("countr_zero") {
         bitmap.reset();
         REQUIRE(bitmap.countr_zero() == bitmap.size());
+        bitmap.set(19);
+        REQUIRE(bitmap.countr_zero() == 19);
         bitmap.set(10);
         REQUIRE(bitmap.countr_zero() == 10);
 
@@ -299,6 +301,8 @@ TEST_CASE("run time bitset", "[bitset]") {
         REQUIRE(bs.countr_zero() == bs.size());
         bs.set(19);
         REQUIRE(bs.countr_zero() == 19);
+        bs.set(10);
+        REQUIRE(bs.countr_zero() == 10);
     }
 
     SECTION("countl_zero") {
