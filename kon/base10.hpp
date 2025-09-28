@@ -56,6 +56,25 @@ static constexpr uint64_t base10_count_threshold_lut[20] = {
     999999999999999999ull,
     9999999999999999999ull,
 };
+
+static constexpr uint8_t base10_count_lut32[33] = {
+    9, 9, 9, 9, 9, 8, 8, 8, //
+    7, 7, 7, 7, 6, 6, 6, 5, //
+    5, 5, 4, 4, 4, 4, 3, 3, //
+    3, 2, 2, 2, 1, 1, 1, 1, 1,
+};
+static constexpr uint32_t base10_count_threshold_lut32[10] = {
+    0ull,
+    9ull,
+    99ull,
+    999ull,
+    9999ull,
+    99999ull,
+    999999ull,
+    9999999ull,
+    99999999ull,
+    999999999ull,
+};
 } // namespace detail
 
 static constexpr bool is_base10_char(char c) noexcept {
@@ -66,9 +85,14 @@ static constexpr std::uint8_t base10_char_decode(char c) noexcept {
     return static_cast<std::uint8_t>(c - '0');
 }
 
-static constexpr std::uint8_t base10_count(const std::uint64_t inputValue) noexcept {
-    const std::uint8_t count = detail::base10_count_lut[kon::countl_zero(inputValue)];
-    return count + static_cast<uint8_t>(inputValue > detail::base10_count_threshold_lut[count]);
+static constexpr std::uint8_t base10_count(const std::uint32_t number) noexcept {
+    const std::uint8_t count = detail::base10_count_lut32[kon::countl_zero(number)];
+    return count + static_cast<uint8_t>(number > detail::base10_count_threshold_lut32[count]);
+}
+
+static constexpr std::uint8_t base10_count(const std::uint64_t number) noexcept {
+    const std::uint8_t count = detail::base10_count_lut[kon::countl_zero(number)];
+    return count + static_cast<uint8_t>(number > detail::base10_count_threshold_lut[count]);
 }
 
 } // namespace kon
