@@ -364,3 +364,54 @@ TEST_CASE("msb_imask", "[bit]") {
     STATIC_REQUIRE(kon::msb_imask<uint8_t>(1) == 0b0000'0001);
     STATIC_REQUIRE(kon::msb_imask<uint8_t>(0) == 0b0000'0000);
 }
+
+TEST_CASE("clip_uint_to_int", "[bit]") {
+    STATIC_REQUIRE(kon::clip_uint_to_int<int16_t>(32768) == 32767);
+    STATIC_REQUIRE(kon::clip_uint_to_int<int16_t>(32767) == 32767);
+    STATIC_REQUIRE(kon::clip_uint_to_int<int16_t>(1000) == 1000);
+    STATIC_REQUIRE(kon::clip_uint_to_int<int16_t>(0) == 0);
+
+    STATIC_REQUIRE(kon::clip_uint_to_int<int16_t>(static_cast<uint16_t>(37768)) == 32767);
+}
+
+TEST_CASE("clip_uint_to_uint", "[bit]") {
+    STATIC_REQUIRE(kon::clip_uint_to_uint<uint16_t>(65536) == 65535);
+    STATIC_REQUIRE(kon::clip_uint_to_uint<uint16_t>(65535) == 65535);
+    STATIC_REQUIRE(kon::clip_uint_to_uint<uint16_t>(1000) == 1000);
+    STATIC_REQUIRE(kon::clip_uint_to_uint<uint16_t>(0) == 0);
+
+    STATIC_REQUIRE(kon::clip_uint_to_uint<uint16_t>(static_cast<uint16_t>(65535)) == 65535);
+}
+
+TEST_CASE("clip_int_to_uint", "[bit]") {
+    STATIC_REQUIRE(kon::clip_int_to_uint<uint16_t>(-2147483648) == 0);
+    STATIC_REQUIRE(kon::clip_int_to_uint<uint16_t>(-1000) == 0);
+    STATIC_REQUIRE(kon::clip_int_to_uint<uint16_t>(-1) == 0);
+    STATIC_REQUIRE(kon::clip_int_to_uint<uint16_t>(0) == 0);
+    STATIC_REQUIRE(kon::clip_int_to_uint<uint16_t>(1000) == 1000);
+    STATIC_REQUIRE(kon::clip_int_to_uint<uint16_t>(65535) == 65535);
+    STATIC_REQUIRE(kon::clip_int_to_uint<uint16_t>(65536) == 65535);
+    STATIC_REQUIRE(kon::clip_int_to_uint<uint16_t>(2147483647) == 65535);
+}
+
+TEST_CASE("clip_int_to_int", "[bit]") {
+    STATIC_REQUIRE(kon::clip_int_to_int<int16_t>(-2147483648) == -32768);
+    STATIC_REQUIRE(kon::clip_int_to_int<int16_t>(-32769) == -32768);
+    STATIC_REQUIRE(kon::clip_int_to_int<int16_t>(-32768) == -32768);
+    STATIC_REQUIRE(kon::clip_int_to_int<int16_t>(-1000) == -1000);
+    STATIC_REQUIRE(kon::clip_int_to_int<int16_t>(0) == 0);
+    STATIC_REQUIRE(kon::clip_int_to_int<int16_t>(1000) == 1000);
+    STATIC_REQUIRE(kon::clip_int_to_int<int16_t>(32767) == 32767);
+    STATIC_REQUIRE(kon::clip_int_to_int<int16_t>(32768) == 32767);
+    STATIC_REQUIRE(kon::clip_int_to_int<int16_t>(2147483647) == 32767);
+
+    STATIC_REQUIRE(kon::clip_int_to_int<int8_t>(-2147483648) == -128);
+    STATIC_REQUIRE(kon::clip_int_to_int<int8_t>(-129) == -128);
+    STATIC_REQUIRE(kon::clip_int_to_int<int8_t>(-128) == -128);
+    STATIC_REQUIRE(kon::clip_int_to_int<int16_t>(-100) == -100);
+    STATIC_REQUIRE(kon::clip_int_to_int<int8_t>(0) == 0);
+    STATIC_REQUIRE(kon::clip_int_to_int<int16_t>(100) == 100);
+    STATIC_REQUIRE(kon::clip_int_to_int<int8_t>(127) == 127);
+    STATIC_REQUIRE(kon::clip_int_to_int<int8_t>(128) == 127);
+    STATIC_REQUIRE(kon::clip_int_to_int<int8_t>(2147483647) == 127);
+}

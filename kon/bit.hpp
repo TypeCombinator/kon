@@ -185,5 +185,50 @@ static constexpr T bit_imask(unsigned char pos) noexcept {
     return ~(static_cast<T>(1) << pos);
 }
 
+// C++26: std::saturate_cast
+// TODO: Disassembly and benchmark
+template <typename T>
+constexpr T clip_uint_to_uint(auto number) noexcept {
+    if constexpr (sizeof(number) > sizeof(T)) {
+        constexpr T t_max = ~static_cast<T>(0);
+        return (number < t_max) ? number : t_max;
+    } else {
+        return number;
+    }
+}
+
+template <typename T>
+constexpr T clip_uint_to_int(auto number) noexcept {
+    if constexpr (sizeof(number) >= sizeof(T)) {
+        constexpr T t_max = (1ull << ((sizeof(T) * 8) - 1)) - 1;
+        return (number < t_max) ? number : t_max;
+    } else {
+        return number;
+    }
+}
+
+template <typename T>
+constexpr T clip_int_to_uint(auto number) noexcept {
+    if constexpr (sizeof(number) > sizeof(T)) {
+        return (number >> (sizeof(T) * 8)) ? (~(number >> (sizeof(number) * 8 - 1))) : number;
+    } else {
+        return (number < 0) ? 0 : number;
+    }
+}
+
+template <typename T>
+constexpr T clip_int_to_int(auto number) noexcept {
+    if constexpr (sizeof(number) > sizeof(T)) {
+        constexpr auto n_bit_width = sizeof(number) * 8;
+        constexpr auto t_bit_width = sizeof(T) * 8;
+        constexpr T mask = (1ull << (t_bit_width - 1)) - 1;
+        return ((number >> t_bit_width) != (number >> (t_bit_width - 1)))
+                 ? ((mask ^ static_cast<T>(number >> (n_bit_width - 1))))
+                 : static_cast<T>(number);
+    } else {
+        return number;
+    }
+}
+
 } // namespace kon
 #endif // bit.hpp
