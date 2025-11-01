@@ -60,4 +60,43 @@ int swap(const std::string &file0_name, const std::string &file1_name) noexcept 
 }
 #endif
 
+
+int create_file_directories(const std::filesystem::path &filename) {
+    auto directory = filename.parent_path();
+    if (directory.empty()) { // Empty directory?
+        return 0;
+    }
+    std::error_code ec;
+    bool exists = std::filesystem::exists(directory, ec);
+    if (ec) {
+        return -1;
+    }
+    if (exists) {
+        bool is_directory = std::filesystem::is_directory(directory, ec);
+        if (ec) {
+            return -1;
+        }
+        if (!is_directory) { // Is there a file with the same name as directory?
+            return -1;
+        }
+        return 0;
+    }
+    bool created = std::filesystem::create_directories(directory, ec);
+    if (ec) {
+        return -1;
+    }
+    if (!created) {
+        return -1;
+    }
+    // Confirm that the directory was created successfully.
+    // created = std::filesystem::exists(directory, ec);
+    // if (ec) {
+    //     return -1;
+    // }
+    // if (!created) {
+    //     return -1;
+    // }
+    return 0;
+}
+
 }; // namespace kon::file_helper

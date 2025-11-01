@@ -5,8 +5,8 @@
 #ifndef FILE_HELPER_F096EED7_C6AD_44B1_A05D_5EC47CA6B5E7
 #define FILE_HELPER_F096EED7_C6AD_44B1_A05D_5EC47CA6B5E7
 
-#include <string>
 #include <memory>
+#include <filesystem>
 
 namespace kon::file_helper {
 
@@ -24,6 +24,8 @@ int rename_swap(
 #ifdef __linux__
 int swap(const std::string &file0_name, const std::string &file1_name) noexcept;
 #endif
+
+int create_file_directories(const std::filesystem::path &filename);
 
 } // namespace kon::file_helper
 
