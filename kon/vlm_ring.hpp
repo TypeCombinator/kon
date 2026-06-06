@@ -13,20 +13,20 @@ namespace kon {
 // - Thers're some UBs.
 class vlm_ring {
    public:
-    static constexpr uint32_t turn_around_message_type = 0xFFFFFFFFu;
+    static constexpr std::uint32_t turn_around_message_type = 0xFFFFFFFFu;
 
     struct message_head {
-        uint32_t type;
-        uint32_t length;
+        std::uint32_t type;
+        std::uint32_t length;
     };
 
     struct zc_scope {
         struct message_head* head;
-        uint8_t* data;
+        std::uint8_t* data;
     };
 
     vlm_ring(std::size_t size)
-        : buffer(new uint8_t[message_align(size + sizeof(message_head))])
+        : buffer(new std::uint8_t[message_align(size + sizeof(message_head))])
         , windex(0)
         , rindex(0)
         , buffer_size(size) {
@@ -37,7 +37,7 @@ class vlm_ring {
     }
 
     [[nodiscard]]
-    uint8_t* push_begin(uint32_t msg_length) noexcept {
+    std::uint8_t* push_begin(std::uint32_t msg_length) noexcept {
         std::size_t rest;
         msg_length = message_align(sizeof(message_head) + msg_length);
 
@@ -64,7 +64,7 @@ class vlm_ring {
     }
 
     [[nodiscard]]
-    bool push_begin(zc_scope& zcs, uint32_t msg_length) noexcept {
+    bool push_begin(zc_scope& zcs, std::uint32_t msg_length) noexcept {
         auto* msg_buffer = push_begin(msg_length);
         if (msg_buffer == nullptr) {
             return false;
@@ -86,7 +86,7 @@ class vlm_ring {
     }
 
     // If the data is a nullptr, it's UB.
-    bool push(uint32_t type, const uint8_t* data, uint32_t length) noexcept {
+    bool push(std::uint32_t type, const std::uint8_t* data, std::uint32_t length) noexcept {
         auto* msg_buffer = push_begin(length);
         if (msg_buffer == nullptr) {
             return false;
@@ -101,7 +101,7 @@ class vlm_ring {
         return true;
     }
 
-    bool push(uint32_t type) noexcept {
+    bool push(std::uint32_t type) noexcept {
         auto* msg_buffer = push_begin(0);
         if (msg_buffer == nullptr) {
             return false;
@@ -172,7 +172,7 @@ class vlm_ring {
     }
 
     [[nodiscard]]
-    bool capacity() const noexcept {
+    std::size_t capacity() const noexcept {
         return buffer_size;
     }
 
@@ -186,13 +186,13 @@ class vlm_ring {
         return rindex.load(std::memory_order_relaxed);
     }
    private:
-    static uint32_t message_align(uint32_t length) noexcept {
+    static std::size_t message_align(std::size_t length) noexcept {
         return (length + 7) & (~7u);
     }
 
     std::atomic_size_t windex, rindex;
-    size_t buffer_size;
-    uint8_t* buffer;
+    std::size_t buffer_size;
+    std::uint8_t* buffer;
 };
 } // namespace kon
 
