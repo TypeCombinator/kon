@@ -20,17 +20,17 @@
 
 
 #if defined(__clang__)
-    #define KON_ATTR_ASSUME(cond) __builtin_assume(cond)
+    #define KON_ATTR_ASSUME(_cond_) __builtin_assume(_cond_)
 #elif defined(_MSC_VER)
-    #define KON_ATTR_ASSUME(cond) __assume(cond)
-#elif defined(__GNUC__) && (__GNUC__ > 12)
-    #define KON_ATTR_ASSUME(cond) __builtin_assume(cond)
-#else
-    #define KON_ATTR_ASSUME(cond)                                                                  \
+    #define KON_ATTR_ASSUME(_cond_) __assume(_cond_)
+#elif defined(__GNUC__)
+    #define KON_ATTR_ASSUME(_cond_)                                                                \
         do {                                                                                       \
-            if (!(cond))                                                                           \
+            if (!(_cond_))                                                                         \
                 __builtin_unreachable();                                                           \
         } while (0)
+#else
+    #define KON_ATTR_ASSUME(_cond_)
 #endif
 
 #define KON_DISALLOW_COPY(_name_)                                                                  \
