@@ -1,4 +1,6 @@
 add_executable(kon_tests
+    chrono/fast_date.cpp
+    chrono/time_spec.cpp
     hash/md5.cpp
     base10.cpp
     base16.cpp
