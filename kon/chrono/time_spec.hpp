@@ -5,6 +5,7 @@
 #ifndef TIME_SPEC_F341A903_484C_426E_9030_740A96F3DC44
 #define TIME_SPEC_F341A903_484C_426E_9030_740A96F3DC44
 #include <cstdint>
+#include <compare>
 
 namespace kon {
 template <std::uint64_t Ratio>
@@ -59,6 +60,16 @@ struct time_spec {
         }
         return time_spec{seconds, subseconds};
     }
+
+    friend constexpr std::strong_ordering
+        operator<=>(const time_spec &lhs, const time_spec &rhs) noexcept {
+        if (auto cmp = lhs.seconds <=> rhs.seconds; cmp != 0) {
+            return cmp;
+        }
+        return lhs.subseconds <=> rhs.subseconds;
+    }
+
+    friend bool operator==(const time_spec &lhs, const time_spec &rhs) noexcept = default;
 };
 
 using time_spec_ms = time_spec<1'000ull>;

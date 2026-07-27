@@ -38,4 +38,13 @@ TEST_CASE("basic", "[time_spec]") {
         REQUIRE(result.seconds == 0);
         REQUIRE(result.subseconds == 700'000'000ll);
     }
+
+    SECTION("compare") {
+        REQUIRE(kon::time_spec_ns{0, 100} < kon::time_spec_ns{0, 1000});
+        REQUIRE(kon::time_spec_ns{0, 1000} > kon::time_spec_ns{0, 100});
+        REQUIRE(kon::time_spec_ns{-1, 1000} < kon::time_spec_ns{0, 1000});
+        REQUIRE(kon::time_spec_ns{0, 1000} > kon::time_spec_ns{-1, 1000});
+        REQUIRE(kon::time_spec_ns{100, 1000} == kon::time_spec_ns{100, 1000});
+        REQUIRE(kon::time_spec_ns{100, 1000} != kon::time_spec_ns{10, 1000});
+    }
 }
