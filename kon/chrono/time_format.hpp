@@ -17,9 +17,28 @@ struct ymd_hms_format_context {
     std::int32_t days{1 << 31};
 };
 
+constexpr unsigned hms_length = sizeof("00:00:00") - 1u;
+
+// seconds: [0, 86400)
+// out: "hh:mm:ss"
+static inline void seconds_to_hms_string(char out[hms_length], std::uint32_t seconds) noexcept {
+    std::uint8_t hours = (static_cast<std::uint64_t>(seconds) * 2443359173u) >> 43;
+    seconds -= static_cast<uint32_t>(hours) * static_cast<uint32_t>(3600);
+
+    std::uint8_t minutes = (seconds * 34953u) >> 21;
+    seconds -= static_cast<uint16_t>(minutes) * static_cast<uint16_t>(60);
+
+    std::memcpy(out, &kon::detail::base10_encode_lut[hours * 2], 2);
+    out += 2;
+    *out++ = ':';
+    std::memcpy(out, &kon::detail::base10_encode_lut[minutes * 2], 2);
+    out += 2;
+    *out++ = ':';
+    std::memcpy(out, &kon::detail::base10_encode_lut[seconds * 2], 2);
+}
+
 static inline std::string_view
     seconds_to_ymd_hms_string(ymd_hms_format_context& ctx, std::int64_t seconds) noexcept {
-    constexpr unsigned hms_length = sizeof("00:00:00") - 1u;
     if (seconds == ctx.seconds) [[likely]] {
         return std::string_view{ctx.buffer, ctx.date_end + hms_length};
     }
@@ -50,23 +69,7 @@ static inline std::string_view
         ctx.date_end = static_cast<uint8_t>(buffer - ctx.buffer);
         ctx.days = days;
     }
-    buffer = ctx.buffer + ctx.date_end;
-
-    std::uint32_t s = seconds;
-    std::uint8_t h = (static_cast<std::uint64_t>(s) * 2443359173u) >> 43;
-    s -= static_cast<uint32_t>(h) * static_cast<uint32_t>(3600);
-
-    std::uint8_t m = (static_cast<std::uint32_t>(s) * 34953u) >> 21;
-    s -= static_cast<uint16_t>(m) * static_cast<uint16_t>(60);
-
-    std::memcpy(buffer, &kon::detail::base10_encode_lut[h * 2], 2);
-    buffer += 2;
-    *buffer++ = ':';
-    std::memcpy(buffer, &kon::detail::base10_encode_lut[m * 2], 2);
-    buffer += 2;
-    *buffer++ = ':';
-    std::memcpy(buffer, &kon::detail::base10_encode_lut[s * 2], 2);
-    // buffer += 2;
+    seconds_to_hms_string(ctx.buffer + ctx.date_end, static_cast<std::uint32_t>(seconds));
     return std::string_view{ctx.buffer, ctx.date_end + hms_length};
 }
 
