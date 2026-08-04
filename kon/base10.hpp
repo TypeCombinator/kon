@@ -5,6 +5,7 @@
 #ifndef BASE10_1775C9DF_D47A_4AE2_AF44_36E468E90A24
 #define BASE10_1775C9DF_D47A_4AE2_AF44_36E468E90A24
 #include <cstdint>
+#include <cstring>
 #include <kon/bit.hpp>
 
 namespace kon {
@@ -75,6 +76,11 @@ static constexpr uint32_t base10_count_threshold_lut32[10] = {
     99999999ull,
     999999999ull,
 };
+
+alignas(2) static constexpr const char base10_encode_lut[201] =
+    "00010203040506070809101112131415161718192021222324252627282930313233343536373839"
+    "40414243444546474849505152535455565758596061626364656667686970717273747576777879"
+    "8081828384858687888990919293949596979899";
 } // namespace detail
 
 static constexpr bool is_base10_char(char c) noexcept {
@@ -93,6 +99,25 @@ static constexpr std::uint8_t base10_count(const std::uint32_t number) noexcept 
 static constexpr std::uint8_t base10_count(const std::uint64_t number) noexcept {
     const std::uint8_t count = detail::base10_count_lut[kon::countl_zero(number)];
     return count + static_cast<uint8_t>(number > detail::base10_count_threshold_lut[count]);
+}
+
+// TODO: Use SIMD for longer numbers.
+template <typename T>
+constexpr void base10_uint_encode(char* out_end, T number) noexcept {
+    while (number >= 100) {
+        out_end -= 2;
+        std::memcpy(
+            out_end, &detail::base10_encode_lut[static_cast<unsigned>(number % 100u) * 2u], 2);
+        number /= 100;
+    }
+    if (number >= 10) {
+        out_end -= 2;
+        std::memcpy(
+            out_end, &detail::base10_encode_lut[static_cast<unsigned>(number % 100u) * 2u], 2);
+    } else {
+        out_end--;
+        *out_end = static_cast<char>('0' + number);
+    }
 }
 
 } // namespace kon
