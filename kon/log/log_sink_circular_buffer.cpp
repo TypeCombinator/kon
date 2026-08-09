@@ -24,7 +24,7 @@ void log_sink_circular_buffer::reset() {
     m_round = 0;
 }
 
-std::size_t log_sink_circular_buffer::get_tail(std::size_t size, tail_space &space) {
+void log_sink_circular_buffer::get_tail(std::size_t size, tail_space &space) {
     std::unique_lock<std::mutex> lock{m_lock};
     if (m_round > 0) {
         if (size > m_capacity) {
@@ -35,12 +35,12 @@ std::size_t log_sink_circular_buffer::get_tail(std::size_t size, tail_space &spa
             space.m_first_part = m_buffer + (m_capacity - (size - m_offset));
             space.m_first_part_size = size - m_offset;
             space.m_second_part = m_buffer;
-            space.m_second_part_size = m_offset;
+            space.m_total_size = size;
         } else {
             space.m_first_part = m_buffer + (m_offset - size);
             space.m_first_part_size = size;
             space.m_second_part = nullptr;
-            space.m_second_part_size = 0;
+            space.m_total_size = size;
         }
     } else {
         if (size > m_offset) {
@@ -50,9 +50,8 @@ std::size_t log_sink_circular_buffer::get_tail(std::size_t size, tail_space &spa
         space.m_first_part = m_buffer + (m_offset - size);
         space.m_first_part_size = size;
         space.m_second_part = nullptr;
-        space.m_second_part_size = 0;
+        space.m_total_size = size;
     }
-    return size;
 }
 
 std::size_t log_sink_circular_buffer::tail_space::read_slice(
@@ -60,14 +59,13 @@ std::size_t log_sink_circular_buffer::tail_space::read_slice(
     std::uint8_t *slice,
     std::size_t slice_size,
     bool &is_last) const noexcept {
-    std::size_t total_size = m_first_part_size + m_second_part_size;
-    if (offset >= total_size) [[unlikely]] {
+    if (offset >= m_total_size) [[unlikely]] {
         is_last = true;
         return 0;
     }
     is_last = false;
     // offset < total_size
-    std::size_t remain = total_size - offset;
+    std::size_t remain = m_total_size - offset;
     if (slice_size >= remain) [[unlikely]] {
         slice_size = remain; // Shrink the slice size.
         is_last = true;
