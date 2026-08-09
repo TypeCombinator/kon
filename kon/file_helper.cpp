@@ -30,6 +30,22 @@ std::unique_ptr<std::uint8_t[]> read_all(const std::string &file_name, size_t &f
     return buffer;
 }
 
+int write_all(int fd, const uint8_t *data, std::size_t size) {
+    std::size_t offset{};
+    while (size > 0) {
+        auto ret = ::write(fd, data + offset, size);
+        if (ret < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+            return ret;
+        }
+        offset += ret;
+        size -= ret;
+    }
+    return 0;
+}
+
 int rename_swap(
     const std::string &file0_name,
     const std::string &file1_name,
@@ -57,6 +73,29 @@ int rename_swap(
 #ifdef __linux__
 int swap(const std::string &file0_name, const std::string &file1_name) noexcept {
     return renameat2(AT_FDCWD, file0_name.c_str(), AT_FDCWD, file1_name.c_str(), RENAME_EXCHANGE);
+}
+
+std::string create_tempfile(std::string_view prefix, std::string_view script) {
+    // Reference: https://www.man7.org/linux/man-pages/man3/mkstemp.3.html
+    // The last six characters of template must be "XXXXXX" and these are replaced with a string
+    // that makes the filename unique.
+    auto file_path = std::filesystem::temp_directory_path() / std::string{prefix}.append("XXXXXX");
+    std::string file_name{file_path};
+
+    // The returned array is null-terminated since C++11.
+    int fd = mkstemp(file_name.data());
+    if (fd < 0) {
+        return "";
+    }
+    std::error_code ec;
+    if (write_all(fd, reinterpret_cast<const uint8_t *>(script.data()), script.size()) != 0) {
+        close(fd);
+        file_path = file_name;
+        std::filesystem::remove(file_path, ec);
+        return "";
+    }
+    close(fd);
+    return file_name;
 }
 #endif
 

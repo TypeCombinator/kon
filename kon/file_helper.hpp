@@ -12,6 +12,8 @@ namespace kon::file_helper {
 
 std::unique_ptr<std::uint8_t[]> read_all(const std::string &file_name, size_t &file_size);
 
+int write_all(int fd, const uint8_t *data, std::size_t size);
+
 // 0: {file0(content0), file1(content1)}
 // 1: {file0(content0), temp_file(content1)}
 // 2: {file1(content0), temp_file(content1)}
@@ -23,6 +25,8 @@ int rename_swap(
 
 #ifdef __linux__
 int swap(const std::string &file0_name, const std::string &file1_name) noexcept;
+
+std::string create_tempfile(std::string_view prefix, std::string_view script);
 #endif
 
 int create_file_directories(const std::filesystem::path &filename);

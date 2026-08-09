@@ -26,6 +26,8 @@ if(KON_IS_TOP_LEVEL_PROJECT)
     # Add extra c/c++ flags.
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_COMPILER_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_COMPILER_FLAGS}")
+
+    include(cmake/module/fmt.cmake)
 endif()
 
 add_subdirectory(kon)

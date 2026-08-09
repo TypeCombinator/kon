@@ -3,6 +3,7 @@ add_executable(kon_tests
     chrono/time_spec.cpp
     chrono/time_format.cpp
     chrono/timebase.cpp
+    tools/bash.cpp
     hash/md5.cpp
     log/log.cpp
     base10.cpp
