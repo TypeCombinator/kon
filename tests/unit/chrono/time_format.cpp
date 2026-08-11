@@ -24,7 +24,7 @@ TEST_CASE("basic", "[time_format]") {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<std::int64_t> dist(-30000ll * 365 * 86400, 30000ll * 365 * 86400);
-    kon::ymd_hms_format_context ctx;
+    kon::ymd_hms_format_context ctx{};
     REQUIRE(ctx.seconds == std::numeric_limits<std::int64_t>::min());
     REQUIRE(ctx.days == std::numeric_limits<std::int32_t>::min());
     for (std::uint32_t i{}; i < 100; i++) {
