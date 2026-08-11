@@ -4,7 +4,7 @@
 
 TEST_CASE("basic", "[log_sink_cirular_buffer]") {
     constexpr std::size_t sink_buffer_size = 8;
-    constexpr std::size_t input_buffer_size = 100;
+    constexpr std::size_t input_buffer_size = 128;
     kon::log_sink_circular_buffer sink{};
     REQUIRE(sink.initialize(sink_buffer_size) == 0);
     std::vector<char> input_buffer;
@@ -14,7 +14,7 @@ TEST_CASE("basic", "[log_sink_cirular_buffer]") {
     }
 
     for (unsigned offset{}; offset < sink_buffer_size; offset++) {
-        for (std::size_t i{}; i < input_buffer.size(); i++) {
+        for (std::size_t i{}; i < (input_buffer_size - sink_buffer_size); i++) {
             sink.reset();
             sink.write_all(&sink, std::string_view{input_buffer.data(), offset});
 
