@@ -49,6 +49,14 @@ struct logger {
         return 0;
     }
 
+    void* get_sink() const noexcept {
+        return m_sink;
+    }
+
+    const sink_interface* get_sink_interface() const noexcept {
+        return m_sink_if;
+    }
+
     template <typename... T>
     void print(fmt::format_string<T...> fmt, T&&... args) {
         auto buffer = fmt::memory_buffer();

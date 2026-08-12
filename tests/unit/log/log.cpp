@@ -47,77 +47,68 @@ TEST_CASE("get_tail", "[log_sink_cirular_buffer]") {
     REQUIRE(sink.initialize(sink_buffer_size) == 0);
     SECTION("round0-offset0") {
         kon::log_sink_circular_buffer::tail_space space;
-        std::size_t ret = sink.get_tail(5, space);
-        REQUIRE(ret == 0);
+        sink.get_tail(5, space);
         REQUIRE(space.m_first_part == sink.m_buffer);
         REQUIRE(space.m_first_part_size == 0);
         REQUIRE(space.m_second_part == nullptr);
-        REQUIRE(space.m_second_part_size == 0);
+        REQUIRE(space.m_total_size == 0);
     }
     SECTION("round0-offsetX") {
         kon::log_sink_circular_buffer::tail_space space;
         sink.write_all(&sink, std::string_view{"123"});
-        std::size_t ret = sink.get_tail(5, space);
-        REQUIRE(ret == 3);
+        sink.get_tail(5, space);
         REQUIRE(space.m_first_part == sink.m_buffer);
         REQUIRE(space.m_first_part_size == 3);
         REQUIRE(space.m_second_part == nullptr);
-        REQUIRE(space.m_second_part_size == 0);
+        REQUIRE(space.m_total_size == 3);
 
-        ret = sink.get_tail(2, space);
-        REQUIRE(ret == 2);
+        sink.get_tail(2, space);
         REQUIRE(space.m_first_part == sink.m_buffer + 1);
         REQUIRE(space.m_first_part_size == 2);
         REQUIRE(space.m_second_part == nullptr);
-        REQUIRE(space.m_second_part_size == 0);
+        REQUIRE(space.m_total_size == 2);
     }
     SECTION("round1-offset0") {
         kon::log_sink_circular_buffer::tail_space space;
         sink.write_all(&sink, std::string_view{"12345678"});
-        std::size_t ret = sink.get_tail(5, space);
-        REQUIRE(ret == 5);
+        sink.get_tail(5, space);
         REQUIRE(space.m_first_part == sink.m_buffer + 3);
         REQUIRE(space.m_first_part_size == 5);
         REQUIRE(space.m_second_part == sink.m_buffer);
-        REQUIRE(space.m_second_part_size == 0);
+        REQUIRE(space.m_total_size == 5);
 
-        ret = sink.get_tail(9, space);
-        REQUIRE(ret == 8);
+        sink.get_tail(9, space);
         REQUIRE(space.m_first_part == sink.m_buffer);
         REQUIRE(space.m_first_part_size == 8);
         REQUIRE(space.m_second_part == sink.m_buffer);
-        REQUIRE(space.m_second_part_size == 0);
+        REQUIRE(space.m_total_size == 8);
     }
     SECTION("round1-offset5") {
         kon::log_sink_circular_buffer::tail_space space;
         sink.write_all(&sink, std::string_view{"1234567890123"});
-        std::size_t ret = sink.get_tail(2, space);
-        REQUIRE(ret == 2);
+        sink.get_tail(2, space);
         REQUIRE(space.m_first_part == sink.m_buffer + 3);
         REQUIRE(space.m_first_part_size == 2);
         REQUIRE(space.m_second_part == nullptr);
-        REQUIRE(space.m_second_part_size == 0);
+        REQUIRE(space.m_total_size == 2);
 
-        ret = sink.get_tail(5, space);
-        REQUIRE(ret == 5);
+        sink.get_tail(5, space);
         REQUIRE(space.m_first_part == sink.m_buffer);
         REQUIRE(space.m_first_part_size == 5);
         REQUIRE(space.m_second_part == nullptr);
-        REQUIRE(space.m_second_part_size == 0);
+        REQUIRE(space.m_total_size == 5);
 
-        ret = sink.get_tail(7, space);
-        REQUIRE(ret == 7);
+        sink.get_tail(7, space);
         REQUIRE(space.m_first_part == sink.m_buffer + 6);
         REQUIRE(space.m_first_part_size == 2);
         REQUIRE(space.m_second_part == sink.m_buffer);
-        REQUIRE(space.m_second_part_size == 5);
+        REQUIRE(space.m_total_size == 7);
 
-        ret = sink.get_tail(9, space);
-        REQUIRE(ret == 8);
+        sink.get_tail(9, space);
         REQUIRE(space.m_first_part == sink.m_buffer + 5);
         REQUIRE(space.m_first_part_size == 3);
         REQUIRE(space.m_second_part == sink.m_buffer);
-        REQUIRE(space.m_second_part_size == 5);
+        REQUIRE(space.m_total_size == 8);
     }
 }
 
@@ -140,7 +131,8 @@ TEST_CASE("read_slice of tail_space", "[log_sink_cirular_buffer]") {
         sink.write_all(&sink, std::string_view{input_buffer.data(), i});
 
         for (unsigned tail_size{}; tail_size <= sink_buffer_size; tail_size++) {
-            std::size_t total_size = sink.get_tail(tail_size, space);
+            sink.get_tail(tail_size, space);
+            std::size_t total_size = space.m_total_size;
             REQUIRE(total_size <= i);
             REQUIRE(total_size <= sink_buffer_size);
             for (unsigned slice_size{1}; slice_size < sink_buffer_size; slice_size++) {

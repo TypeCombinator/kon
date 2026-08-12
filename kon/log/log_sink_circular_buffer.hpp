@@ -26,7 +26,7 @@ struct log_sink_circular_buffer {
         const uint8_t* m_first_part;
         std::size_t m_first_part_size;
         const uint8_t* m_second_part;
-        std::size_t m_second_part_size;
+        std::size_t m_total_size;
 
         std::size_t read_slice(
             std::size_t offset,
@@ -35,7 +35,7 @@ struct log_sink_circular_buffer {
             bool& is_last) const noexcept;
     };
 
-    std::size_t get_tail(std::size_t size, tail_space& space);
+    void get_tail(std::size_t size, tail_space& space);
 
     ~log_sink_circular_buffer() {
         if (m_buffer != nullptr) {
