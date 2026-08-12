@@ -23,10 +23,16 @@ struct log_sink_circular_buffer {
     void reset();
 
     struct tail_space {
-        const uint8_t* first_part;
-        std::size_t first_part_size;
-        const uint8_t* second_part;
-        std::size_t second_part_size;
+        const uint8_t* m_first_part;
+        std::size_t m_first_part_size;
+        const uint8_t* m_second_part;
+        std::size_t m_second_part_size;
+
+        std::size_t read_slice(
+            std::size_t offset,
+            std::uint8_t* slice,
+            std::size_t slice_size,
+            bool& is_last) const noexcept;
     };
 
     std::size_t get_tail(std::size_t size, tail_space& space);

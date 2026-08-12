@@ -32,27 +32,59 @@ std::size_t log_sink_circular_buffer::get_tail(std::size_t size, tail_space &spa
         }
         std::size_t remain = m_capacity - m_offset;
         if (size > m_offset) {
-            space.first_part = m_buffer + (m_capacity - (size - m_offset));
-            space.first_part_size = size - m_offset;
-            space.second_part = m_buffer;
-            space.second_part_size = m_offset;
+            space.m_first_part = m_buffer + (m_capacity - (size - m_offset));
+            space.m_first_part_size = size - m_offset;
+            space.m_second_part = m_buffer;
+            space.m_second_part_size = m_offset;
         } else {
-            space.first_part = m_buffer + (m_offset - size);
-            space.first_part_size = size;
-            space.second_part = nullptr;
-            space.second_part_size = 0;
+            space.m_first_part = m_buffer + (m_offset - size);
+            space.m_first_part_size = size;
+            space.m_second_part = nullptr;
+            space.m_second_part_size = 0;
         }
     } else {
         if (size > m_offset) {
             size = m_offset;
         }
         // Now, size <= m_offset;
-        space.first_part = m_buffer + (m_offset - size);
-        space.first_part_size = size;
-        space.second_part = nullptr;
-        space.second_part_size = 0;
+        space.m_first_part = m_buffer + (m_offset - size);
+        space.m_first_part_size = size;
+        space.m_second_part = nullptr;
+        space.m_second_part_size = 0;
     }
     return size;
+}
+
+std::size_t log_sink_circular_buffer::tail_space::read_slice(
+    std::size_t offset,
+    std::uint8_t *slice,
+    std::size_t slice_size,
+    bool &is_last) const noexcept {
+    std::size_t total_size = m_first_part_size + m_second_part_size;
+    if (offset >= total_size) [[unlikely]] {
+        is_last = true;
+        return 0;
+    }
+    is_last = false;
+    // offset < total_size
+    std::size_t remain = total_size - offset;
+    if (slice_size >= remain) [[unlikely]] {
+        slice_size = remain; // Shrink the slice size.
+        is_last = true;
+    }
+    if (offset < m_first_part_size) {
+        if ((offset + slice_size) <= m_first_part_size) {
+            std::memcpy(slice, m_first_part + offset, slice_size);
+        } else {
+            remain = m_first_part_size - offset;
+            std::memcpy(slice, m_first_part + offset, remain);
+            std::memcpy(slice + remain, m_second_part, slice_size - remain);
+        }
+    } else {
+        offset -= m_first_part_size;
+        std::memcpy(slice, m_second_part + offset, slice_size);
+    }
+    return slice_size;
 }
 
 int log_sink_circular_buffer::write_all(void *v_self, std::string_view input) {
