@@ -66,7 +66,7 @@ TEST_CASE("get_tail", "[log_sink_cirular_buffer]") {
 
         ret = sink.get_tail(2, space);
         REQUIRE(ret == 2);
-        REQUIRE(space.first_part == sink.m_buffer);
+        REQUIRE(space.first_part == sink.m_buffer + 1);
         REQUIRE(space.first_part_size == 2);
         REQUIRE(space.second_part == nullptr);
         REQUIRE(space.second_part_size == 0);
@@ -91,7 +91,14 @@ TEST_CASE("get_tail", "[log_sink_cirular_buffer]") {
     SECTION("round1-offset5") {
         kon::log_sink_circular_buffer::tail_space space;
         sink.write_all(&sink, std::string_view{"1234567890123"});
-        std::size_t ret = sink.get_tail(5, space);
+        std::size_t ret = sink.get_tail(2, space);
+        REQUIRE(ret == 2);
+        REQUIRE(space.first_part == sink.m_buffer + 3);
+        REQUIRE(space.first_part_size == 2);
+        REQUIRE(space.second_part == nullptr);
+        REQUIRE(space.second_part_size == 0);
+
+        ret = sink.get_tail(5, space);
         REQUIRE(ret == 5);
         REQUIRE(space.first_part == sink.m_buffer);
         REQUIRE(space.first_part_size == 5);

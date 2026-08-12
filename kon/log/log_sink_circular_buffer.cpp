@@ -37,7 +37,7 @@ std::size_t log_sink_circular_buffer::get_tail(std::size_t size, tail_space &spa
             space.second_part = m_buffer;
             space.second_part_size = m_offset;
         } else {
-            space.first_part = m_buffer;
+            space.first_part = m_buffer + (m_offset - size);
             space.first_part_size = size;
             space.second_part = nullptr;
             space.second_part_size = 0;
@@ -47,7 +47,7 @@ std::size_t log_sink_circular_buffer::get_tail(std::size_t size, tail_space &spa
             size = m_offset;
         }
         // Now, size <= m_offset;
-        space.first_part = m_buffer;
+        space.first_part = m_buffer + (m_offset - size);
         space.first_part_size = size;
         space.second_part = nullptr;
         space.second_part_size = 0;
@@ -129,9 +129,5 @@ const logger::sink_interface log_sink_circular_buffer::sink_if{
     sync_all,
     clear_all,
 };
-// const logger::sink_interface &log_sink_circular_buffer::get_interface() noexcept {
-
-//     return sink_if;
-// }
 
 } // namespace kon
