@@ -44,7 +44,7 @@ struct logger {
     }
 
     int set_sink(const sink_interface& interface, void* sink) noexcept {
-        m_sink_if = interface;
+        m_sink_if = &interface;
         m_sink = sink;
         return 0;
     }
@@ -54,22 +54,19 @@ struct logger {
         auto buffer = fmt::memory_buffer();
         fmt::vargs<T...> va = {{args...}};
         fmt::detail::vformat_to(buffer, fmt, va);
-        m_sink_if.write_all(m_sink, {buffer.data(), buffer.size()});
+        m_sink_if->write_all(m_sink, {buffer.data(), buffer.size()});
     }
 
     int flush_all() {
-        return m_sink_if.flush_all(m_sink);
+        return m_sink_if->flush_all(m_sink);
     }
 
     int sync_all() {
-        if (m_sink_if.sync_all == nullptr) {
-            return 0;
-        }
-        return m_sink_if.sync_all(m_sink);
+        return m_sink_if->sync_all(m_sink);
     }
 
     int clear_all() {
-        return m_sink_if.clear_all(m_sink);
+        return m_sink_if->clear_all(m_sink);
     }
 
     inline static thread_local std::string tls_prefix{};
@@ -77,8 +74,8 @@ struct logger {
    private:
     log_level m_log_level{log_level::none};
 
-    sink_interface m_sink_if;
-    void* m_sink;
+    const sink_interface* m_sink_if{nullptr};
+    void* m_sink{nullptr};
 };
 
 
