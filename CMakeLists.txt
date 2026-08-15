@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
 
-# include(cmake/toolchain/clang.cmake)
-
-# list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/module")
-
 option(KON_BUILD_TESTS "Build tests" OFF)
 option(KON_BUILD_EXAMPLES "Build examples" ON)
 
@@ -39,4 +35,7 @@ endif()
 if(KON_BUILD_TESTING)
     include(cmake/module/Catch2.cmake)
     add_subdirectory(tests/unit)
+
+    include(cmake/module/GoogleBenchmark.cmake)
+    add_subdirectory(tests/bench)
 endif()
