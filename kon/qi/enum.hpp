@@ -13,7 +13,7 @@ namespace qi {
 template <std::size_t N, typename ET>
 struct enum_information {
     std::size_t m_size{};
-    bool m_is_continious;
+    bool m_is_continuous;
     ET m_values[N];
     ET m_min, m_max;
     std::string_view m_names[N];
@@ -24,7 +24,7 @@ struct enum_information {
         enum_information<SN, ET> r{};
         std::size_t s = m_size;
         r.m_size = s;
-        r.m_is_continious = m_is_continious;
+        r.m_is_continuous = m_is_continuous;
         for (std::size_t i{}; i < s; i++) {
             r.m_values[i] = m_values[i];
         }
@@ -38,45 +38,47 @@ struct enum_information {
     }
 };
 
+template <typename ET, std::size_t N, int MinEv, int MaxEv>
+consteval enum_information<N, ET> make_enum_infomation_impl() noexcept {
+    enum_information<N, ET> enum_infos{};
+    [&enum_infos]<auto... Ns>(kon::index_sequence<Ns...>) {
+        constexpr std::string_view pnames[] = {
+            qi::pretty_value_name<static_cast<ET>(MinEv + Ns)>()...};
+        bool is_continuous{true};
+        std::size_t prev = N;
+        std::string_view prefix{};
+        std::size_t size{};
+        for (std::size_t i{}; i < N; i++) {
+            std::string_view name = pnames[i];
+            if (!name.starts_with('(')) {
+                if (size == 0) {
+                    prefix = pretty_name_prefix(name);
+                    enum_infos.m_pretty_prefix = prefix;
+                }
+                name.remove_prefix(prefix.size());
+                if ((prev != N) && (prev + 1 != i)) {
+                    is_continuous = false;
+                }
+                prev = i;
+                enum_infos.m_values[size] = static_cast<ET>(MinEv + i);
+                enum_infos.m_names[size] = name;
+                size++;
+            }
+        }
+        if (size > 0) {
+            enum_infos.m_size = size;
+            enum_infos.m_min = enum_infos.m_values[0];
+            enum_infos.m_max = enum_infos.m_values[enum_infos.m_size - 1];
+        }
+        enum_infos.m_is_continuous = is_continuous;
+    }(kon::make_index_sequence<N>());
+    return enum_infos;
+}
+
 template <typename ET, int MinEv, int MaxEv>
 consteval auto make_enum_infomation() noexcept {
     constexpr std::size_t N = MaxEv - MinEv + 1;
-    using enum_information_t = enum_information<N, ET>;
-    constexpr enum_information_t enum_infos = []() noexcept {
-        enum_information_t enum_infos{};
-        [&enum_infos]<auto... Ns>(kon::index_sequence<Ns...>) {
-            constexpr std::string_view pnames[] = {
-                qi::pretty_value_name<static_cast<ET>(MinEv + Ns)>()...};
-            bool is_continious{true};
-            std::size_t prev = N;
-            std::string_view prefix{};
-            std::size_t size{};
-            for (std::size_t i{}; i < N; i++) {
-                std::string_view name = pnames[i];
-                if (!name.starts_with('(')) {
-                    if (size == 0) {
-                        prefix = pretty_name_prefix(name);
-                        enum_infos.m_pretty_prefix = prefix;
-                    }
-                    name.remove_prefix(prefix.size());
-                    if ((prev != N) && (prev + 1 != i)) {
-                        is_continious = false;
-                    }
-                    prev = i;
-                    enum_infos.m_values[size] = static_cast<ET>(MinEv + i);
-                    enum_infos.m_names[size] = name;
-                    size++;
-                }
-            }
-            if (size > 0) {
-                enum_infos.m_size = size;
-                enum_infos.m_min = enum_infos.m_values[0];
-                enum_infos.m_max = enum_infos.m_values[enum_infos.m_size - 1];
-            }
-            enum_infos.m_is_continious = is_continious;
-        }(kon::make_index_sequence<N>());
-        return enum_infos;
-    }();
+    constexpr enum_information<N, ET> enum_infos = make_enum_infomation_impl<ET, N, MinEv, MaxEv>();
     return enum_infos.template shrink<enum_infos.m_size>();
 }
 
@@ -88,7 +90,7 @@ struct e_reflect {
     static constexpr auto sm_infos = make_enum_infomation<ET, MinEv, MaxEv>();
 
     static consteval bool is_continuous() noexcept {
-        return sm_infos.m_is_continious;
+        return sm_infos.m_is_continuous;
     }
 
     static consteval std::size_t size() noexcept {
