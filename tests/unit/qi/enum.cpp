@@ -12,7 +12,6 @@ static_assert(e_foo_infos::size() == 3);
 static_assert(e_foo_infos::to_name(e_foo::v2) == std::string_view{"v2"});
 static_assert(e_foo_infos::to_name(e_foo::v1) == std::string_view{"v1"});
 static_assert(e_foo_infos::to_name(e_foo::v2) == std::string_view{"v2"});
-
 static_assert(e_foo_infos::to_vindex("v8") == std::string_view::npos);
 static_assert(e_foo_infos::to_vindex("v0") != std::string_view::npos);
 static_assert(e_foo_infos::to_vindex("v1") != std::string_view::npos);

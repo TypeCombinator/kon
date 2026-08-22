@@ -107,23 +107,23 @@ struct e_reflect {
         return sm_infos.m_pretty_prefix;
     }
 
-    static constexpr std::string_view to_name(ET ev, std::string_view invalid = {}) noexcept {
-        underlying_type uev = static_cast<underlying_type>(ev);
+    static constexpr std::string_view to_name(ET value, std::string_view invalid = {}) noexcept {
+        underlying_type uv = static_cast<underlying_type>(value);
         if constexpr (is_continuous()) {
-            constexpr underlying_type m = static_cast<underlying_type>(min());
-            if ((m <= uev) && (uev <= static_cast<underlying_type>(max()))) [[likely]] {
-                return sm_infos.m_names[uev - m];
+            constexpr underlying_type min_uv = static_cast<underlying_type>(min());
+            if ((min_uv <= uv) && (uv <= static_cast<underlying_type>(max()))) [[likely]] {
+                return sm_infos.m_names[uv - min_uv];
             }
         } else {
             std::size_t start = 0;
             std::size_t end = size();
             while (start < end) {
                 std::size_t m = (start + end) >> 1;
-                underlying_type mv = static_cast<underlying_type>(sm_infos.m_values[m]);
-                if (mv == uev) {
+                underlying_type muv = static_cast<underlying_type>(sm_infos.m_values[m]);
+                if (muv == uv) {
                     return sm_infos.m_names[m];
                 }
-                if (static_cast<underlying_type>(mv) < uev) {
+                if (muv < uv) {
                     start = m + 1;
                 } else {
                     end = m;
@@ -133,11 +133,11 @@ struct e_reflect {
         return invalid;
     }
 
-    static constexpr std::size_t to_vindex(std::string_view en) noexcept {
+    static constexpr std::size_t to_vindex(std::string_view name) noexcept {
         const auto &names = sm_infos.m_names;
         constexpr std::size_t size = sm_infos.m_size;
         for (std::size_t i{}; i < size; i++) {
-            if (names[i] == en) {
+            if (names[i] == name) {
                 return i;
             }
         }
