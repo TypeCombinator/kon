@@ -6,24 +6,24 @@
 #define NAME_50B1C3B5_5521_4D01_AB74_4F0AB0278A4E
 #include <string_view>
 #if defined(__GNUC__) || defined(__clang__)
-    #define CURRENT_FUNCTION __PRETTY_FUNCTION__
+    #define KON_CURRENT_FUNC __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)
-    #define CURRENT_FUNCTION __FUNCSIG__
+    #define KON_CURRENT_FUNC __FUNCSIG__
 #else
     #include <source_location>
-    #define CURRENT_FUNCTION std::source_location::current().function_name()
+    #define KON_CURRENT_FUNC std::source_location::current().function_name()
 #endif
 namespace kon {
 //
 namespace qi {
 template <typename T>
 consteval const char *fun_str() noexcept {
-    return CURRENT_FUNCTION;
+    return KON_CURRENT_FUNC;
 }
 
 template <auto T>
 consteval const char *fun_str_nttp() noexcept {
-    return CURRENT_FUNCTION;
+    return KON_CURRENT_FUNC;
 }
 
 struct type_guider {
