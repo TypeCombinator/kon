@@ -21,7 +21,7 @@ struct enum_information {
 
     template <std::size_t SN>
     consteval enum_information<SN, ET> shrink() const noexcept {
-        enum_information<SN, ET> r{};
+        enum_information<SN, ET> r;
         std::size_t s = m_size;
         r.m_size = s;
         r.m_is_continuous = m_is_continuous;
