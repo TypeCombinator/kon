@@ -87,7 +87,7 @@ struct e_reflect {
 
     static constexpr auto sm_infos = make_enum_infomation<ET, MinEv, MaxEv>();
 
-    static consteval bool is_continous() noexcept {
+    static consteval bool is_continuous() noexcept {
         return sm_infos.m_is_continious;
     }
 
@@ -109,7 +109,7 @@ struct e_reflect {
 
     static constexpr std::string_view to_name(ET ev, std::string_view invalid = {}) noexcept {
         underlying_type uev = static_cast<underlying_type>(ev);
-        if constexpr (is_continous()) {
+        if constexpr (is_continuous()) {
             constexpr underlying_type m = static_cast<underlying_type>(min());
             if ((m <= uev) && (uev <= static_cast<underlying_type>(max()))) [[likely]] {
                 return sm_infos.m_names[uev - m];
