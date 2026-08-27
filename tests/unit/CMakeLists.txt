@@ -6,6 +6,7 @@ add_executable(kon_tests
     tools/bash.cpp
     hash/md5.cpp
     log/log.cpp
+    qi/enum.cpp
     base10.cpp
     base16.cpp
     bio.cpp
