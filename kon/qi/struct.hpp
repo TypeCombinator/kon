@@ -17,6 +17,8 @@ struct cure_all {
 
 template <class T, std::size_t Start = 0, std::size_t End = 256>
 consteval std::size_t member_count() noexcept {
+    static_assert(Start < End, "Too many members!");
+
     constexpr std::size_t Middle = (Start + End) >> 1;
     constexpr int r = []<std::size_t... Ns>(kon::index_sequence<Ns...>) {
         if constexpr (not requires { T{cure_all<Ns>{}...}; }) {
@@ -30,9 +32,9 @@ consteval std::size_t member_count() noexcept {
         }
     }(kon::make_index_sequence<Middle>());
 
-    if (r > 0) {
+    if constexpr(r > 0) {
         return member_count<T, Start, Middle>();
-    } else if (r < 0) {
+    } else if constexpr(r < 0) {
         return member_count<T, Middle + 1, End>();
     } else {
         return Middle;

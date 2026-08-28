@@ -9,6 +9,7 @@ add_library(kon STATIC
     log/log_sink_console.cpp
     log/log_sink_file.cpp
     log/log.cpp
+    tools/bash.cpp
     base16.cpp
     conv.cpp
     dev_mem.cpp
