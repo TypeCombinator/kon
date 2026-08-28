@@ -135,7 +135,7 @@ struct e_reflect {
         return invalid;
     }
 
-    static constexpr std::size_t to_vindex(std::string_view name) noexcept {
+    static constexpr std::size_t to_rank(std::string_view name) noexcept {
         const auto &names = sm_infos.m_names;
         constexpr std::size_t size = sm_infos.m_size;
         for (std::size_t i{}; i < size; i++) {
@@ -146,8 +146,8 @@ struct e_reflect {
         return std::string_view::npos;
     }
 
-    static constexpr ET to_value_from_vindex(std::size_t index) noexcept {
-        return sm_infos.m_values[index];
+    static constexpr ET to_value_from_rank(std::size_t rank) noexcept {
+        return sm_infos.m_values[rank];
     }
 };
 } // namespace qi
