@@ -20,6 +20,12 @@ using make_index_sequence =
 #else
     index_sequence<__integer_pack(N)...>;
 #endif
+
+template <std::size_t N>
+struct size_constant {
+    static constexpr std::size_t value = N;
+};
+
 } // namespace kon
 
 #endif // utility.hpp
