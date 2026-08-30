@@ -88,26 +88,26 @@ struct e_reflect {
     using underlying_type = std::underlying_type_t<ET>;
     using type = ET;
 
-    static constexpr auto sm_infos = make_enum_infomation<ET, MinEv, MaxEv>();
+    static constexpr auto sm_info = make_enum_infomation<ET, MinEv, MaxEv>();
 
     static consteval bool is_continuous() noexcept {
-        return sm_infos.m_is_continuous;
+        return sm_info.m_is_continuous;
     }
 
     static consteval std::size_t size() noexcept {
-        return sm_infos.m_size;
+        return sm_info.m_size;
     }
 
     static consteval ET min() noexcept {
-        return sm_infos.m_min;
+        return sm_info.m_min;
     }
 
     static consteval ET max() noexcept {
-        return sm_infos.m_max;
+        return sm_info.m_max;
     }
 
     static consteval std::string_view pretty_name_prefix() noexcept {
-        return sm_infos.m_pretty_prefix;
+        return sm_info.m_pretty_prefix;
     }
 
     static constexpr std::string_view to_name(ET value, std::string_view invalid = {}) noexcept {
@@ -115,16 +115,16 @@ struct e_reflect {
         if constexpr (is_continuous()) {
             constexpr underlying_type min_uv = static_cast<underlying_type>(min());
             if ((min_uv <= uv) && (uv <= static_cast<underlying_type>(max()))) [[likely]] {
-                return sm_infos.m_names[uv - min_uv];
+                return sm_info.m_names[uv - min_uv];
             }
         } else {
             std::size_t start = 0;
             std::size_t end = size();
             while (start < end) {
                 std::size_t m = (start + end) >> 1;
-                underlying_type muv = static_cast<underlying_type>(sm_infos.m_values[m]);
+                underlying_type muv = static_cast<underlying_type>(sm_info.m_values[m]);
                 if (muv == uv) {
-                    return sm_infos.m_names[m];
+                    return sm_info.m_names[m];
                 }
                 if (muv < uv) {
                     start = m + 1;
@@ -137,8 +137,8 @@ struct e_reflect {
     }
 
     static constexpr std::size_t to_rank(std::string_view name) noexcept {
-        const auto &names = sm_infos.m_names;
-        constexpr std::size_t size = sm_infos.m_size;
+        const auto &names = sm_info.m_names;
+        constexpr std::size_t size = sm_info.m_size;
         for (std::size_t i{}; i < size; i++) {
             if (names[i] == name) {
                 return i;
@@ -148,7 +148,7 @@ struct e_reflect {
     }
 
     static constexpr ET to_value_from_rank(std::size_t rank) noexcept {
-        return sm_infos.m_values[rank];
+        return sm_info.m_values[rank];
     }
 };
 } // namespace qi
