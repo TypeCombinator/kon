@@ -5,6 +5,7 @@
 #ifndef MEMBER_692AFE14_9E46_46F0_B589_38EC5223AFD9
 #define MEMBER_692AFE14_9E46_46F0_B589_38EC5223AFD9
 #include <memory>
+#include <kon/qi/name.hpp>
 
 namespace kon {
 //
@@ -37,6 +38,13 @@ constexpr std::size_t offset_of(M T::*field) noexcept {
         }
     }
     return 0;
+}
+
+template <auto M>
+consteval std::string_view member_name() noexcept {
+    std::string_view name = kon::qi::pretty_value_name<M>();
+    std::size_t offset = name.rfind("::") + 2;
+    return {name.data() + offset, name.size() - offset};
 }
 } // namespace qi
 } // namespace kon
