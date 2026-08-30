@@ -1,6 +1,12 @@
 #include <kon/qi/enum.hpp>
 
 namespace qi_enum_test {
+enum class e_foo0 {
+};
+using e_foo0_infos = kon::qi::e_reflect<e_foo0, -1, 1>;
+static_assert(e_foo0_infos::is_continuous());
+static_assert(e_foo0_infos::size() == 0);
+
 enum class e_foo {
     v0 = 1,
     v1 = -5,
