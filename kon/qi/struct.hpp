@@ -7,7 +7,16 @@
 #include <kon/qi/utility.hpp>
 #include <kon/qi/name.hpp>
 
-#define KON_FAST_FWD1(_arg_) static_cast<decltype(_arg_)&&>(_arg_)
+template <typename T, typename U>
+constexpr auto&& forward_binding_decl(auto&& u) noexcept {
+    if constexpr (std::is_lvalue_reference_v<T>) {
+        return u;
+    } else {
+        return static_cast<U&&>(u);
+    }
+}
+
+#define KON_FWD_BINDING_DECL(_t_, _m_) forward_binding_decl<_t_, decltype(_m_)>(_m_)
 
 // A const object declaration.
 template <typename T>
@@ -79,11 +88,19 @@ constexpr void mvisit_as_nttp(size_constant<3>, auto&& fun) noexcept {
     auto& [m0, m1, m2] = obj;
     fun.template operator()<&m0, &m1, &m2>();
 }
+
+template <typename T>
+constexpr decltype(auto) mvisit(size_constant<3>, T&& obj, auto&& fun) noexcept {
+    auto&& [m0, m1, m2] = KON_FAST_FWD1(obj);
+    return fun(
+        KON_FWD_BINDING_DECL(T, m0), KON_FWD_BINDING_DECL(T, m1), KON_FWD_BINDING_DECL(T, m2));
+}
 } // namespace detail
 
 template <std::size_t N>
 struct struct_information {
     std::string_view m_names[N];
+    // TODO: Defer computation until use.
     std::size_t m_offsets[N];
 };
 
@@ -151,6 +168,15 @@ struct s_reflect {
     static constexpr std::size_t member_offset(std::size_t I) noexcept {
         return sm_info.m_offsets[I];
     }
+
+    template <std::size_t I>
+    static constexpr auto&& member_get(auto&& obj) noexcept {
+        return detail::mvisit(
+            size_constant<sm_size>{}, KON_FAST_FWD1(obj), kon::value_pack_element<I>);
+    }
+
+    template <std::size_t I>
+    using member_type = std::remove_cvref_t<decltype(member_get<I>(std::declval<T>()))>;
 };
 
 } // namespace qi
