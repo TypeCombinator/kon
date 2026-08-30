@@ -69,25 +69,6 @@ consteval std::string_view member_name() noexcept {
     return {name.data() + offset, name.size() - (offset + member_guider::rgarbage)};
 }
 
-consteval std::size_t member_offset(
-    std::size_t start,
-    std::size_t end,
-    const unsigned char* init,
-    const void* target) noexcept {
-    while (start < end) {
-        std::size_t mid = (start + end) >> 1;
-        const unsigned char* addr = init + mid;
-        if (addr == target) {
-            return mid;
-        } else if (addr < target) {
-            start = mid + 1;
-        } else {
-            end = mid;
-        }
-    }
-    return 0;
-}
-
 template <auto& obj>
 constexpr void mvisit_as_nttp(size_constant<0>, auto&& fun) noexcept {
     fun.template operator()<>();
@@ -129,9 +110,16 @@ consteval struct_information<N> make_struct_information() noexcept {
 
     detail::mvisit_as_nttp<CODECL<U>.t>(kon::size_constant<N>{}, [&info]<auto... Ms>() {
         const unsigned char* init = CODECL<U>.buffer;
-        std::size_t offset[N] = {detail::member_offset(0, sizeof(T), init, Ms)...};
+        const void* targets[N] = {Ms...};
+        std::size_t msizes[N] = {sizeof(*Ms)...};
+        std::size_t offset = 0;
         for (std::size_t i{}; i < N; i++) {
-            info.m_offsets[i] = offset[i];
+            const void* target = targets[i];
+            while ((init + offset) < target) {
+                offset++;
+            }
+            info.m_offsets[i] = offset;
+            offset += (msizes[i] & (~std::size_t{1}));
         }
     });
     return info;
