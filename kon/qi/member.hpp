@@ -10,6 +10,14 @@
 namespace kon {
 //
 namespace qi {
+namespace detail {
+template <typename T, typename M>
+constexpr void touch_member_pointer(M T::*field) noexcept;
+} // namespace detail
+
+template <auto M>
+concept is_member_pointer_v = requires() { detail::touch_member_pointer(M); };
+
 template <typename T, typename M>
 constexpr std::size_t offset_of(M T::*field) noexcept {
     union U {
