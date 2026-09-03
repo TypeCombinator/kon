@@ -6,6 +6,7 @@
 #define STRUCT_432BBF93_B816_4A5C_963E_0EDA8E33212F
 #include <kon/qi/utility.hpp>
 #include <kon/qi/name.hpp>
+#include <kon/qi/detail/mcall_each.hpp>
 
 template <typename T, typename U>
 constexpr auto&& forward_binding_decl(auto&& u) noexcept {
@@ -15,8 +16,6 @@ constexpr auto&& forward_binding_decl(auto&& u) noexcept {
         return static_cast<U&&>(u);
     }
 }
-
-#define KON_FWD_BINDING_DECL(_t_, _m_) forward_binding_decl<_t_, decltype(_m_)>(_m_)
 
 // A const object declaration.
 template <typename T>
@@ -36,7 +35,7 @@ struct cure_all {
     operator T() const noexcept;
 };
 
-template <class T, std::size_t Start = 0, std::size_t End = 256>
+template <class T, std::size_t Start = 0, std::size_t End = 128>
 consteval std::size_t member_count() noexcept {
     static_assert(Start < End, "Too many members!");
 
@@ -83,18 +82,32 @@ constexpr void mvisit_as_nttp(size_constant<0>, auto&& fun) noexcept {
     fun.template operator()<>();
 }
 
-template <auto& obj>
-constexpr void mvisit_as_nttp(size_constant<3>, auto&& fun) noexcept {
-    auto& [m0, m1, m2] = obj;
-    fun.template operator()<&m0, &m1, &m2>();
-}
+#define KON_CALL_VA(_i_, ...)                                                                      \
+    template <auto& obj>                                                                           \
+    constexpr void mvisit_as_nttp(kon::size_constant<_i_>, auto&& fun) noexcept {                  \
+        auto&& [__VA_ARGS__] = obj;                                                                \
+        fun.template operator()<KON_CALL_EACH##_i_(&, __VA_ARGS__)>();                             \
+    }
+
+#include "kon/qi/detail/mcall_va.inc"
+#undef KON_CALL_VA
 
 template <typename T>
-constexpr decltype(auto) mvisit(size_constant<3>, T&& obj, auto&& fun) noexcept {
-    auto&& [m0, m1, m2] = KON_FAST_FWD1(obj);
-    return fun(
-        KON_FWD_BINDING_DECL(T, m0), KON_FWD_BINDING_DECL(T, m1), KON_FWD_BINDING_DECL(T, m2));
+constexpr decltype(auto) mvisit(size_constant<0>, T&& obj, auto&& fun) noexcept {
+    return fun();
 }
+
+#define FWD_STRUCT_BINDING_T(_m_) forward_binding_decl<T, decltype(_m_)>(_m_)
+
+#define KON_CALL_VA(_i_, ...)                                                                      \
+    template <typename T>                                                                          \
+    constexpr decltype(auto) mvisit(kon::size_constant<_i_>, T&& obj, auto&& fun) noexcept {       \
+        auto&& [__VA_ARGS__] = KON_FAST_FWD1(obj);                                                 \
+        return fun(KON_CALL_EACH##_i_(FWD_STRUCT_BINDING_T, __VA_ARGS__));                         \
+    }
+
+#include "kon/qi/detail/mcall_va.inc"
+#undef KON_CALL_VA
 } // namespace detail
 
 template <std::size_t N>
