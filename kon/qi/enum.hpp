@@ -39,7 +39,7 @@ struct enum_information {
 };
 
 template <typename ET, std::size_t N, int MinEv, int MaxEv>
-consteval enum_information<N, ET> make_enum_infomation_impl() noexcept {
+consteval enum_information<N, ET> make_enum_information_impl() noexcept {
     enum_information<N, ET> enum_infos{};
     [&enum_infos]<auto... Ns>(kon::index_sequence<Ns...>) {
         constexpr std::string_view pnames[] = {
@@ -78,7 +78,8 @@ consteval enum_information<N, ET> make_enum_infomation_impl() noexcept {
 template <typename ET, int MinEv, int MaxEv>
 consteval auto make_enum_infomation() noexcept {
     constexpr std::size_t N = MaxEv - MinEv + 1;
-    constexpr enum_information<N, ET> enum_infos = make_enum_infomation_impl<ET, N, MinEv, MaxEv>();
+    constexpr enum_information<N, ET> enum_infos =
+        make_enum_information_impl<ET, N, MinEv, MaxEv>();
     return enum_infos.template shrink<enum_infos.m_size>();
 }
 
