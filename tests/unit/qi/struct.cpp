@@ -73,4 +73,15 @@ TEST_CASE("basic", "[struct]") {
     REQUIRE(s_foo3_minfo::member_get<0>(obj) == 0x321);
     REQUIRE(s_foo3_minfo::member_get<1>(obj) == 'y');
     REQUIRE(s_foo3_minfo::member_get<2>(obj) == 0.1);
+
+    s_foo3_minfo::foreach([&]<std::size_t I>() {
+        if constexpr (I == 0) {
+            REQUIRE(s_foo3_minfo::member_get<I>(obj) == 0x321);
+        } else if constexpr (I == 1) {
+            REQUIRE(s_foo3_minfo::member_get<I>(obj) == 'y');
+        } else {
+            REQUIRE(s_foo3_minfo::member_get<I>(obj) == 0.1);
+        }
+    });
+}
 }

@@ -177,6 +177,12 @@ struct s_reflect {
 
     template <std::size_t I>
     using member_type = std::remove_cvref_t<decltype(member_get<I>(std::declval<T>()))>;
+
+    static void foreach(auto&& fun) {
+        [&]<auto... Is>(kon::index_sequence<Is...>) {
+            (KON_FAST_FWD1(fun).template operator()<Is>(), ...);
+        }(kon::make_index_sequence<sm_size>{});
+    }
 };
 
 } // namespace qi
