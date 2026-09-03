@@ -20,7 +20,7 @@ constexpr std::size_t offset_of(M T::*field) noexcept {
 
     std::size_t start = 0;
     std::size_t end = sizeof(T);
-    void *target = static_cast<void *>(std::addressof(u.t.*field));
+    const void *target = static_cast<const void *>(std::addressof(u.t.*field));
     while (start < end) {
         std::size_t m = (start + end) >> 1;
         if (u.buffer + m == target) {

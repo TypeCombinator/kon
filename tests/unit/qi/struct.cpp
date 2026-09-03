@@ -1,5 +1,6 @@
 #include <kon/qi/struct.hpp>
 #include <kon/qi/member.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace qi_struct_test {
 struct s_foo0 { };
@@ -11,7 +12,7 @@ struct s_foo2 {
 struct s_foo3 {
     int a;
     char b;
-    int c;
+    const double c;
 };
 
 static_assert(kon::qi::member_count<s_foo0>() == 0);
@@ -51,4 +52,25 @@ static_assert(s_foo3_minfo::member_name<2>() == std::string_view{"c"});
 static_assert(s_foo3_minfo::member_offset<0>() == kon::qi::offset_of(&s_foo3::a));
 static_assert(s_foo3_minfo::member_offset<1>() == kon::qi::offset_of(&s_foo3::b));
 static_assert(s_foo3_minfo::member_offset<2>() == kon::qi::offset_of(&s_foo3::c));
+
+static_assert(std::is_same_v<s_foo3_minfo::member_type<0>, int>);
+static_assert(std::is_same_v<s_foo3_minfo::member_type<1>, char>);
+static_assert(std::is_same_v<s_foo3_minfo::member_type<2>, double>);
 } // namespace qi_struct_test
+
+using namespace qi_struct_test;
+
+TEST_CASE("basic", "[struct]") {
+    s_foo3 obj{0x123, 'x', 0.1};
+    auto &a = s_foo3_minfo::member_get<0>(obj);
+    auto &b = s_foo3_minfo::member_get<1>(obj);
+    auto &c = s_foo3_minfo::member_get<2>(obj);
+    REQUIRE(a == 0x123);
+    REQUIRE(b == 'x');
+    REQUIRE(c == 0.1);
+    a = 0x321;
+    b = 'y';
+    REQUIRE(s_foo3_minfo::member_get<0>(obj) == 0x321);
+    REQUIRE(s_foo3_minfo::member_get<1>(obj) == 'y');
+    REQUIRE(s_foo3_minfo::member_get<2>(obj) == 0.1);
+}
