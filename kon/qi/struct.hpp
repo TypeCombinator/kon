@@ -153,8 +153,8 @@ consteval struct_information<N> make_struct_information() noexcept {
 template <typename T>
 struct s_reflect {
     static constexpr std::size_t sm_size = member_count<T>();
-    // Preprocessed information.
-    static constexpr auto sm_pp_info =
+    // Member addresses.
+    static constexpr auto sm_maddrs =
         detail::mvisit_as_nttp<CODECL<T>>(size_constant<sm_size>{}, []<auto... Vs>() {
             return kon::qi::value_pack<Vs...>{};
         });
@@ -189,7 +189,7 @@ struct s_reflect {
     }
 
     template <std::size_t I>
-    using member_type = std::remove_cvref_t<decltype(*sm_pp_info.template get<I>())>;
+    using member_type = std::remove_cvref_t<decltype(*sm_maddrs.template get<I>())>;
 
     static void foreach(auto&& fun) {
         [&]<auto... Is>(kon::index_sequence<Is...>) {
