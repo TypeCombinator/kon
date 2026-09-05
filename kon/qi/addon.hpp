@@ -15,9 +15,11 @@
         return kon::qi::value_pack<__VA_ARGS__>{};                                                 \
     }
 
-#define KON_QI_ADDON_M1(_m_, ...)                                                                  \
-    template <>                                                                                    \
-    constexpr auto addon_m<&CODECL<ADDON_T>.a> = kon::qi::value_pack<__VA_ARGS__>{};
+#define KON_QI_ADDON_INIT()                                                                        \
+    template <auto maddr>                                                                          \
+    static consteval auto get_m(kon::qi::addon_tag<maddr>) noexcept {                              \
+        return kon::qi::value_pack<>{};                                                            \
+    }
 
 namespace kon {
 //
