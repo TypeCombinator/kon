@@ -152,6 +152,8 @@ consteval struct_information<N> make_struct_information() noexcept {
 
 template <typename T>
 struct s_reflect {
+    using type = T;
+
     static constexpr std::size_t sm_size = member_count<T>();
     // Member addresses.
     static constexpr auto sm_maddrs =
@@ -196,6 +198,23 @@ struct s_reflect {
             (KON_FAST_FWD1(fun).template operator()<Is>(), ...);
         }(kon::make_index_sequence<sm_size>{});
     }
+
+    template <std::size_t I>
+    static consteval auto addon_tag() noexcept {
+        return kon::qi::addon_tag<sm_maddrs.template get<I>()>{};
+    }
+
+    static consteval auto addon() noexcept {
+        if constexpr (requires() { typename T::template addon_register<>; }) {
+            return typename T::template addon_register<>{};
+        } else if constexpr (requires() { typename addon_register<T>::addon_host_type; }) {
+            return addon_register<T>{};
+        } else {
+            return addon_register<void>{};
+        }
+    }
+
+    using addon_type = decltype(addon());
 };
 
 } // namespace qi
