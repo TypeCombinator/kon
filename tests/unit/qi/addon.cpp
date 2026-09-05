@@ -1,4 +1,5 @@
 #include <kon/qi/struct.hpp>
+#include <kon/qi/enum.hpp>
 
 namespace qi_addon_test {
 
@@ -89,5 +90,49 @@ struct ts_x {
 
 static_assert(test_struct_addon<ts_x<void>>());
 static_assert(test_struct_addon<ts_x<int>, 'Y'>());
+
+enum class e_foo : int {
+    a,
+    b,
+    c,
+    d
+};
+} // namespace qi_addon_test
+
+namespace kon::qi {
+template <>
+struct addon_register<qi_addon_test::e_foo> {
+    using addon_host_type = qi_addon_test::e_foo;
+    KON_QI_ADDON_INIT();
+    KON_QI_ADDON_E(a, 0, nullptr);
+    KON_QI_ADDON_E(b, 'X');
+    KON_QI_ADDON_E(c);
+};
+
+} // namespace kon::qi
+
+namespace qi_addon_test {
+consteval bool test_enum_addon() noexcept {
+    using minfo = kon::qi::e_reflect<e_foo>;
+    using addon = minfo::addon_type;
+
+    constexpr auto m0_addon = addon::get_m(minfo::addon_tag<e_foo::a>());
+    static_assert(m0_addon.size() == 2);
+    static_assert(m0_addon.template get<0>() == 0);
+    static_assert(m0_addon.template get<1>() == nullptr);
+
+    constexpr auto m1_addon = addon::get_m(minfo::addon_tag<e_foo::b>());
+    static_assert(m1_addon.size() == 1);
+    static_assert(m1_addon.template get<0>() == 'X');
+
+    constexpr auto m2_addon = addon::get_m(minfo::addon_tag<e_foo::c>());
+    static_assert(m2_addon.size() == 0);
+
+    constexpr auto m3_addon = addon::get_m(minfo::addon_tag<e_foo::d>());
+    static_assert(m2_addon.size() == 0);
+    return true;
+}
+
+static_assert(test_enum_addon());
 
 } // namespace qi_addon_test

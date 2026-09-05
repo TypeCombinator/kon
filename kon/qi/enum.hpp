@@ -4,8 +4,8 @@
 
 #ifndef ENUM_6D7EAEC9_15FB_46FD_8465_783CB02DD621
 #define ENUM_6D7EAEC9_15FB_46FD_8465_783CB02DD621
-#include <kon/qi/utility.hpp>
 #include <kon/qi/name.hpp>
+#include <kon/qi/addon.hpp>
 
 namespace kon {
 //
@@ -147,9 +147,24 @@ struct e_reflect {
         return std::string_view::npos;
     }
 
+    template <ET e>
+    static consteval auto addon_tag() noexcept {
+        return kon::qi::addon_tag<e>{};
+    }
+
     static constexpr ET to_value_from_rank(std::size_t rank) noexcept {
         return sm_info.m_values[rank];
     }
+
+    static consteval auto addon() noexcept {
+        if constexpr (requires() { typename addon_register<ET>::addon_host_type; }) {
+            return addon_register<ET>{};
+        } else {
+            return addon_register<void>{};
+        }
+    }
+
+    using addon_type = decltype(addon());
 };
 } // namespace qi
 } // namespace kon

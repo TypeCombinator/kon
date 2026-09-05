@@ -11,6 +11,11 @@
         return kon::qi::value_pack<__VA_ARGS__>{};                                                 \
     }
 
+#define KON_QI_ADDON_E(_e_, ...)                                                                   \
+    static consteval auto get_m(kon::qi::addon_tag<addon_host_type::_e_>) noexcept {               \
+        return kon::qi::value_pack<__VA_ARGS__>{};                                                 \
+    }
+
 #define KON_QI_ADDON_INIT()                                                                        \
     template <auto maddr>                                                                          \
     static consteval auto get_m(kon::qi::addon_tag<maddr>) noexcept {                              \

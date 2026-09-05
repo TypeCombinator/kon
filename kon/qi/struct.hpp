@@ -4,9 +4,9 @@
 
 #ifndef STRUCT_432BBF93_B816_4A5C_963E_0EDA8E33212F
 #define STRUCT_432BBF93_B816_4A5C_963E_0EDA8E33212F
-#include <kon/qi/addon.hpp>
 #include <kon/qi/name.hpp>
 #include <kon/qi/detail/mcall_each.hpp>
+#include <kon/qi/addon.hpp>
 
 // A const object declaration.
 template <typename T>
