@@ -4,10 +4,9 @@
 
 #ifndef STRUCT_432BBF93_B816_4A5C_963E_0EDA8E33212F
 #define STRUCT_432BBF93_B816_4A5C_963E_0EDA8E33212F
-#include <kon/qi/utility.hpp>
+#include <kon/qi/addon.hpp>
 #include <kon/qi/name.hpp>
 #include <kon/qi/detail/mcall_each.hpp>
-
 
 // A const object declaration.
 template <typename T>
@@ -78,8 +77,8 @@ consteval std::string_view member_name() noexcept {
 }
 
 template <auto& obj>
-constexpr void mvisit_as_nttp(size_constant<0>, auto&& fun) noexcept {
-    fun.template operator()<>();
+constexpr auto mvisit_as_nttp(size_constant<0>, auto&& fun) noexcept {
+    return fun.template operator()<>();
 }
 
 template <typename T>
@@ -91,9 +90,9 @@ constexpr decltype(auto) mvisit(size_constant<0>, T&& obj, auto&& fun) noexcept 
 
 #define KON_CALL_VA(_i_, ...)                                                                      \
     template <auto& obj>                                                                           \
-    constexpr void mvisit_as_nttp(kon::size_constant<_i_>, auto&& fun) noexcept {                  \
+    constexpr auto mvisit_as_nttp(kon::size_constant<_i_>, auto&& fun) noexcept {                  \
         auto&& [__VA_ARGS__] = obj;                                                                \
-        fun.template operator()<KON_CALL_EACH##_i_(&, __VA_ARGS__)>();                             \
+        return fun.template operator()<KON_CALL_EACH##_i_(&, __VA_ARGS__)>();                      \
     }                                                                                              \
     template <typename T>                                                                          \
     constexpr decltype(auto) mvisit(kon::size_constant<_i_>, T&& obj, auto&& fun) noexcept {       \
@@ -154,6 +153,11 @@ consteval struct_information<N> make_struct_information() noexcept {
 template <typename T>
 struct s_reflect {
     static constexpr std::size_t sm_size = member_count<T>();
+    // Preprocessed information.
+    static constexpr auto sm_pp_info =
+        detail::mvisit_as_nttp<CODECL<T>>(size_constant<sm_size>{}, []<auto... Vs>() {
+            return kon::qi::value_pack<Vs...>{};
+        });
     static constexpr auto sm_info = make_struct_information<sm_size, T>();
 
     static consteval std::size_t size() noexcept {
@@ -185,7 +189,7 @@ struct s_reflect {
     }
 
     template <std::size_t I>
-    using member_type = std::remove_cvref_t<decltype(member_get<I>(std::declval<T>()))>;
+    using member_type = std::remove_cvref_t<decltype(*sm_pp_info.template get<I>())>;
 
     static void foreach(auto&& fun) {
         [&]<auto... Is>(kon::index_sequence<Is...>) {
