@@ -97,6 +97,12 @@ enum class e_foo : int {
     c,
     d
 };
+enum class e_foo2 : int {
+    a,
+    b,
+    c = 1000,
+    d
+};
 } // namespace qi_addon_test
 
 namespace kon::qi {
@@ -105,13 +111,22 @@ struct addon_register<qi_addon_test::e_foo> {
     using addon_host_type = qi_addon_test::e_foo;
     KON_QI_ADDON_INIT();
     static constexpr int value_range[][2] = {
-        {0, 10}
+        {0, 10},
     };
     KON_QI_ADDON_E(a, 0, nullptr);
     KON_QI_ADDON_E(b, 'X');
     KON_QI_ADDON_E(c);
 };
 
+template <>
+struct addon_register<qi_addon_test::e_foo2> {
+    using addon_host_type = qi_addon_test::e_foo;
+    KON_QI_ADDON_INIT();
+    static constexpr int value_range[][2] = {
+        {   0,   10},
+        {1000, 1010},
+    };
+};
 } // namespace kon::qi
 
 namespace qi_addon_test {
@@ -142,5 +157,19 @@ consteval bool test_enum_addon() noexcept {
 }
 
 static_assert(test_enum_addon());
+
+consteval bool test_enum_addon_multi_ranges() noexcept {
+    using minfo = kon::qi::e_reflect<e_foo2>;
+    using addon = minfo::addon_type;
+
+    static_assert(minfo::size() == 4);
+    static_assert(minfo::to_name(e_foo2::a) == std::string_view{"a"});
+    static_assert(minfo::to_name(e_foo2::b) == std::string_view{"b"});
+    static_assert(minfo::to_name(e_foo2::c) == std::string_view{"c"});
+    static_assert(minfo::to_name(e_foo2::d) == std::string_view{"d"});
+    return true;
+}
+
+static_assert(test_enum_addon_multi_ranges());
 
 } // namespace qi_addon_test
