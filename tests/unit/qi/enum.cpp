@@ -4,7 +4,7 @@ namespace qi_enum_test {
 enum class e_foo0 {
 };
 using e_foo0_infos = kon::qi::e_reflect<e_foo0>;
-// static_assert(e_foo0_infos::is_continuous());
+static_assert(!e_foo0_infos::is_continuous());
 static_assert(e_foo0_infos::size() == 0);
 
 enum class e_foo {
@@ -13,7 +13,7 @@ enum class e_foo {
     v2,
 };
 using e_foo_infos = kon::qi::e_reflect<e_foo>;
-// static_assert(!e_foo_infos::is_continuous());
+static_assert(!e_foo_infos::is_continuous());
 static_assert(e_foo_infos::size() == 3);
 static_assert(e_foo_infos::to_name(e_foo::v2) == std::string_view{"v2"});
 static_assert(e_foo_infos::to_name(e_foo::v1) == std::string_view{"v1"});
@@ -34,7 +34,7 @@ enum class e_foo_c {
     v3,
 };
 using e_foo_c_infos = kon::qi::e_reflect<e_foo_c>;
-// static_assert(e_foo_c_infos::is_continuous());
+static_assert(e_foo_c_infos::is_continuous());
 static_assert(e_foo_c_infos::size() == 4);
 static_assert(e_foo_c_infos::to_rank("v8") == std::string_view::npos);
 static_assert(e_foo_c_infos::to_rank("v0") != std::string_view::npos);

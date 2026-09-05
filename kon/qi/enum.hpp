@@ -12,10 +12,12 @@ namespace kon {
 namespace qi {
 template <std::size_t N, typename ET>
 struct enum_information {
+    using utype = std::underlying_type_t<ET>;
+
     std::size_t m_size;
     bool m_is_continuous;
-    ET m_values[N];
-    ET m_min, m_max;
+    utype m_values[N];
+    utype m_min, m_max;
     std::string_view m_names[N];
     std::string_view m_pretty_prefix;
 
@@ -71,7 +73,7 @@ struct enum_information_maker {
                     prefix = pretty_name_prefix(name);
                 }
                 name.remove_prefix(prefix.size());
-                enum_infos.m_values[size] = static_cast<ET>(MinEv + i);
+                enum_infos.m_values[size] = MinEv + i;
                 enum_infos.m_names[size] = name;
                 size++;
             }
@@ -96,6 +98,20 @@ consteval enum_information<TotalSpace, ET> make_enum_information_impl() noexcept
         if (size > 0) {
             enum_info.m_min = enum_info.m_values[0];
             enum_info.m_max = enum_info.m_values[size - 1];
+            if constexpr (VRN == 1) {
+                bool is_continuous = true;
+                auto prev = enum_info.m_values[0];
+                auto cur = prev;
+                for (std::size_t i{1}; i < size; i++) {
+                    cur = enum_info.m_values[i];
+                    if (prev + 1 != cur) {
+                        is_continuous = false;
+                        break;
+                    }
+                    prev = cur;
+                }
+                enum_info.m_is_continuous = is_continuous;
+            }
         }
         enum_info.m_pretty_prefix = prefix;
     }(kon::make_index_sequence<VRN>{});
@@ -130,7 +146,7 @@ struct e_reflect {
 
     using addon_type = decltype(addon());
 
-    using underlying_type = std::underlying_type_t<ET>;
+    using utype = std::underlying_type_t<ET>;
     using type = ET;
 
     static consteval auto enum_information_select() noexcept {
@@ -152,11 +168,11 @@ struct e_reflect {
     }
 
     static consteval ET min() noexcept {
-        return sm_info.m_min;
+        return static_cast<ET>(sm_info.m_min);
     }
 
     static consteval ET max() noexcept {
-        return sm_info.m_max;
+        return static_cast<ET>(sm_info.m_max);
     }
 
     static consteval std::string_view pretty_name_prefix() noexcept {
@@ -164,10 +180,10 @@ struct e_reflect {
     }
 
     static constexpr std::string_view to_name(ET value, std::string_view invalid = {}) noexcept {
-        underlying_type uv = static_cast<underlying_type>(value);
+        utype uv = static_cast<utype>(value);
         if constexpr (is_continuous()) {
-            constexpr underlying_type min_uv = static_cast<underlying_type>(min());
-            if ((min_uv <= uv) && (uv <= static_cast<underlying_type>(max()))) [[likely]] {
+            constexpr utype min_uv = sm_info.m_min;
+            if ((min_uv <= uv) && (uv <= sm_info.m_max)) [[likely]] {
                 return sm_info.m_names[uv - min_uv];
             }
         } else {
@@ -175,7 +191,7 @@ struct e_reflect {
             std::size_t end = size();
             while (start < end) {
                 std::size_t m = (start + end) >> 1;
-                underlying_type muv = static_cast<underlying_type>(sm_info.m_values[m]);
+                utype muv = sm_info.m_values[m];
                 if (muv == uv) {
                     return sm_info.m_names[m];
                 }
@@ -201,7 +217,7 @@ struct e_reflect {
     }
 
     static constexpr ET to_value_from_rank(std::size_t rank) noexcept {
-        return sm_info.m_values[rank];
+        return static_cast<ET>(sm_info.m_values[rank]);
     }
 
     template <ET e>
