@@ -39,7 +39,7 @@ consteval std::size_t member_count() noexcept {
     static_assert(Start < End, "Too many members!");
 
     constexpr std::size_t Middle = (Start + End) >> 1;
-    constexpr int r = []<std::size_t... Ns>(kon::index_sequence<Ns...>) {
+    constexpr int r = []<std::size_t... Ns>(index_sequence<Ns...>) {
         if constexpr (not requires { T{cure_all<Ns>{}...}; }) {
             return 1;
         } else if constexpr (
@@ -49,7 +49,7 @@ consteval std::size_t member_count() noexcept {
         } else {
             return -1;
         }
-    }(kon::make_index_sequence<Middle>());
+    }(make_index_sequence<Middle>());
 
     if constexpr (r > 0) {
         return member_count<T, Start, Middle>();
@@ -90,13 +90,13 @@ constexpr decltype(auto) mvisit(size_constant<0>, T&& obj, auto&& fun) noexcept 
 
 #define KON_CALL_VA(_i_, ...)                                                                      \
     template <auto& obj>                                                                           \
-    constexpr auto mvisit_as_nttp(kon::size_constant<_i_>, auto&& fun) noexcept {                  \
+    constexpr auto mvisit_as_nttp(size_constant<_i_>, auto&& fun) noexcept {                       \
         auto&& [__VA_ARGS__] = obj;                                                                \
         return fun.template operator()<KON_CALL_EACH##_i_(&, __VA_ARGS__)>();                      \
     }                                                                                              \
     template <typename T>                                                                          \
-    constexpr decltype(auto) mvisit(kon::size_constant<_i_>, T&& obj, auto&& fun) noexcept {       \
-        auto&& [__VA_ARGS__] = KON_FAST_FWD1(obj);                                                 \
+    constexpr decltype(auto) mvisit(size_constant<_i_>, T&& obj, auto&& fun) noexcept {            \
+        auto&& [__VA_ARGS__] = KON_QI_FFWD1(obj);                                                  \
         return fun(KON_CALL_EACH##_i_(FWD_BINDING_T, __VA_ARGS__));                                \
     }
 
@@ -115,7 +115,7 @@ struct struct_information {
 template <std::size_t N, typename T>
 consteval struct_information<N> make_struct_information() noexcept {
     struct_information<N> info;
-    detail::mvisit_as_nttp<CODECL<T>>(kon::size_constant<N>{}, [&info]<auto... Ms>() {
+    detail::mvisit_as_nttp<CODECL<T>>(size_constant<N>{}, [&info]<auto... Ms>() {
         std::string_view names[N] = {detail::member_name<Ms>()...};
         for (std::size_t i{}; i < N; i++) {
             info.m_names[i] = names[i];
@@ -133,7 +133,7 @@ consteval struct_information<N> make_struct_information() noexcept {
         }
     };
 
-    detail::mvisit_as_nttp<CODECL<U>.t>(kon::size_constant<N>{}, [&info]<auto... Ms>() {
+    detail::mvisit_as_nttp<CODECL<U>.t>(size_constant<N>{}, [&info]<auto... Ms>() {
         const unsigned char* init = CODECL<U>.buffer;
         const void* targets[N] = {Ms...};
         std::size_t msizes[N] = {sizeof(*Ms)...};
@@ -187,6 +187,7 @@ struct s_reflect {
         detail::mvisit_as_nttp<CODECL<T>>(size_constant<sm_size>{}, []<auto... Vs>() {
             return kon::qi::value_pack<Vs...>{};
         });
+    // TODO: Generate information from sm_maddrs.
     static constexpr auto sm_info = make_struct_information<sm_size, T>();
 
     static consteval std::size_t size() noexcept {
@@ -213,17 +214,16 @@ struct s_reflect {
 
     template <std::size_t I>
     static constexpr auto&& member_get(auto&& obj) noexcept {
-        return detail::mvisit(
-            size_constant<sm_size>{}, KON_FAST_FWD1(obj), kon::value_pack_element<I>);
+        return detail::mvisit(size_constant<sm_size>{}, KON_QI_FFWD1(obj), value_pack_element<I>);
     }
 
     template <std::size_t I>
     using member_type = std::remove_cvref_t<decltype(*sm_maddrs.template get<I>())>;
 
     static void foreach(auto&& fun) {
-        [&]<auto... Is>(kon::index_sequence<Is...>) {
-            (KON_FAST_FWD1(fun).template operator()<Is>(), ...);
-        }(kon::make_index_sequence<sm_size>{});
+        [&]<auto... Is>(index_sequence<Is...>) {
+            (KON_QI_FFWD1(fun).template operator()<Is>(), ...);
+        }(make_index_sequence<sm_size>{});
     }
 
     template <std::size_t I>

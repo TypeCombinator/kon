@@ -44,14 +44,14 @@ constexpr int default_enum_value_range[1][2] = {
     {-128, 127}
 };
 
-template <auto& ValueRange, std::size_t VRN>
+template <auto& ValueRanges, std::size_t VRN>
 consteval std::size_t enum_total_space() noexcept {
     std::size_t space{};
     for (std::size_t i{}; i < VRN; i++) {
-        if (ValueRange[i][1] < ValueRange[i][0]) {
+        if (ValueRanges[i][1] < ValueRanges[i][0]) {
             return 0;
         }
-        space += (ValueRange[i][1] - ValueRange[i][0]) + 1;
+        space += (ValueRanges[i][1] - ValueRanges[i][0]) + 1;
     }
     return space;
 }
@@ -62,10 +62,10 @@ struct enum_information_maker {
 
     template <auto... Ns>
     static consteval void
-        make_impl(auto& enum_infos, std::string_view& prefix, kon::index_sequence<Ns...>) {
+        make_impl(auto& enum_info, std::string_view& prefix, index_sequence<Ns...>) {
         constexpr std::string_view pnames[] = {pretty_value_name<static_cast<ET>(MinEv + Ns)>()...};
 
-        std::size_t size = enum_infos.m_size;
+        std::size_t size = enum_info.m_size;
         for (std::size_t i{}; i < space; i++) {
             std::string_view name = pnames[i];
             if (!name.starts_with('(')) {
@@ -73,16 +73,16 @@ struct enum_information_maker {
                     prefix = pretty_name_prefix(name);
                 }
                 name.remove_prefix(prefix.size());
-                enum_infos.m_values[size] = MinEv + i;
-                enum_infos.m_names[size] = name;
+                enum_info.m_values[size] = MinEv + i;
+                enum_info.m_names[size] = name;
                 size++;
             }
         }
-        enum_infos.m_size = size;
+        enum_info.m_size = size;
     }
 
     static consteval void make(auto& enum_infos, std::string_view& prefix) {
-        make_impl(enum_infos, prefix, kon::make_index_sequence<space>{});
+        make_impl(enum_infos, prefix, make_index_sequence<space>{});
     }
 };
 
@@ -90,7 +90,7 @@ template <typename ET, std::size_t TotalSpace, auto& ValueRanges, std::size_t VR
 consteval enum_information<TotalSpace, ET> make_enum_information_impl() noexcept {
     enum_information<TotalSpace, ET> enum_info{};
 
-    [&enum_info]<auto... Is>(kon::index_sequence<Is...>) {
+    [&enum_info]<auto... Is>(index_sequence<Is...>) {
         std::string_view prefix{};
         (enum_information_maker<ET, ValueRanges[Is][0], ValueRanges[Is][1]>::make(enum_info, prefix),
          ...);
@@ -114,7 +114,7 @@ consteval enum_information<TotalSpace, ET> make_enum_information_impl() noexcept
             }
         }
         enum_info.m_pretty_prefix = prefix;
-    }(kon::make_index_sequence<VRN>{});
+    }(make_index_sequence<VRN>{});
     return enum_info;
 }
 
