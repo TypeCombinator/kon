@@ -154,7 +154,34 @@ template <typename T>
 struct s_reflect {
     using type = T;
 
-    static constexpr std::size_t sm_size = member_count<T>();
+    static consteval auto addon() noexcept {
+        if constexpr (requires() { typename T::template addon_register<>; }) {
+            return typename T::template addon_register<>{};
+        } else if constexpr (requires() { typename addon_register<T>::addon_host_type; }) {
+            return addon_register<T>{};
+        } else {
+            return addon_register<void>{};
+        }
+    }
+
+    using addon_type = decltype(addon());
+
+    static consteval auto member_count_select() noexcept {
+        if constexpr (requires() { addon_type::count_range; }) {
+            using cr_type = std::remove_reference_t<decltype(addon_type::count_range)>;
+            static_assert(std::rank_v<cr_type> == 1);
+            static_assert(std::extent_v<cr_type, 0> == 2);
+            constexpr auto cr_min = addon_type::count_range[0];
+            constexpr auto cr_max = addon_type::count_range[1];
+            static_assert(cr_min <= cr_max && cr_min >= 0);
+            return member_count<T, cr_min, cr_max + 1>();
+        } else {
+            return member_count<T>();
+        }
+    }
+
+    static constexpr std::size_t sm_size = member_count_select();
+
     // Member addresses.
     static constexpr auto sm_maddrs =
         detail::mvisit_as_nttp<CODECL<T>>(size_constant<sm_size>{}, []<auto... Vs>() {
@@ -203,18 +230,6 @@ struct s_reflect {
     static consteval auto addon_tag() noexcept {
         return kon::qi::addon_tag<sm_maddrs.template get<I>()>{};
     }
-
-    static consteval auto addon() noexcept {
-        if constexpr (requires() { typename T::template addon_register<>; }) {
-            return typename T::template addon_register<>{};
-        } else if constexpr (requires() { typename addon_register<T>::addon_host_type; }) {
-            return addon_register<T>{};
-        } else {
-            return addon_register<void>{};
-        }
-    }
-
-    using addon_type = decltype(addon());
 };
 
 } // namespace qi

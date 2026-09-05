@@ -39,7 +39,7 @@ struct enum_information {
 };
 
 constexpr int default_enum_value_range[1][2] = {
-    {-127, 128}
+    {-128, 127}
 };
 
 template <auto& ValueRange, std::size_t VRN>

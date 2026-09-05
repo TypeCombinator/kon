@@ -12,7 +12,7 @@ struct s_foo {
     template <typename addon_host_type = s_foo>
     struct addon_register {
         KON_QI_ADDON_INIT();
-
+        static constexpr std::size_t count_range[2] = {3, 10};
         KON_QI_ADDON_M(a, 0, nullptr);
         KON_QI_ADDON_M(b, 'X');
         KON_QI_ADDON_M(c);
