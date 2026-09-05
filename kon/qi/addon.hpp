@@ -33,7 +33,11 @@ concept has_internal_addon = requires() { typename T::template addon_register<T>
 template <typename T>
 using addon_get = T::template addon_register<T>;
 
-struct addon_register_empty { };
+template <typename T>
+struct addon_register_outside {
+    static constexpr bool is_registered = false;
+};
+
 } // namespace qi
 } // namespace kon
 
