@@ -3,7 +3,7 @@ def gen_call_each(limit: int):
     print("// clang-format off")
     for n in range(1, limit):
         output0 = f"#define KON_CALL_EACH{n}(F,{','.join(f'_{i}' for i in range(n))})"
-        output1 = f"{', '.join(f'F(_{i})' for i in range(n))}"
+        output1 = f"{','.join(f'F(_{i})' for i in range(n))}"
         print(f"{output0} {output1}")
 
 

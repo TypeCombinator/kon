@@ -4,10 +4,9 @@
 
 #ifndef STRUCT_432BBF93_B816_4A5C_963E_0EDA8E33212F
 #define STRUCT_432BBF93_B816_4A5C_963E_0EDA8E33212F
-#include <kon/qi/utility.hpp>
 #include <kon/qi/name.hpp>
 #include <kon/qi/detail/mcall_each.hpp>
-
+#include <kon/qi/addon.hpp>
 
 // A const object declaration.
 template <typename T>
@@ -40,7 +39,7 @@ consteval std::size_t member_count() noexcept {
     static_assert(Start < End, "Too many members!");
 
     constexpr std::size_t Middle = (Start + End) >> 1;
-    constexpr int r = []<std::size_t... Ns>(kon::index_sequence<Ns...>) {
+    constexpr int r = []<std::size_t... Ns>(index_sequence<Ns...>) {
         if constexpr (not requires { T{cure_all<Ns>{}...}; }) {
             return 1;
         } else if constexpr (
@@ -50,7 +49,7 @@ consteval std::size_t member_count() noexcept {
         } else {
             return -1;
         }
-    }(kon::make_index_sequence<Middle>());
+    }(make_index_sequence<Middle>());
 
     if constexpr (r > 0) {
         return member_count<T, Start, Middle>();
@@ -78,8 +77,8 @@ consteval std::string_view member_name() noexcept {
 }
 
 template <auto& obj>
-constexpr void mvisit_as_nttp(size_constant<0>, auto&& fun) noexcept {
-    fun.template operator()<>();
+constexpr auto mvisit_as_nttp(size_constant<0>, auto&& fun) noexcept {
+    return fun.template operator()<>();
 }
 
 template <typename T>
@@ -91,13 +90,13 @@ constexpr decltype(auto) mvisit(size_constant<0>, T&& obj, auto&& fun) noexcept 
 
 #define KON_CALL_VA(_i_, ...)                                                                      \
     template <auto& obj>                                                                           \
-    constexpr void mvisit_as_nttp(kon::size_constant<_i_>, auto&& fun) noexcept {                  \
+    constexpr auto mvisit_as_nttp(size_constant<_i_>, auto&& fun) noexcept {                       \
         auto&& [__VA_ARGS__] = obj;                                                                \
-        fun.template operator()<KON_CALL_EACH##_i_(&, __VA_ARGS__)>();                             \
+        return fun.template operator()<KON_CALL_EACH##_i_(&, __VA_ARGS__)>();                      \
     }                                                                                              \
     template <typename T>                                                                          \
-    constexpr decltype(auto) mvisit(kon::size_constant<_i_>, T&& obj, auto&& fun) noexcept {       \
-        auto&& [__VA_ARGS__] = KON_FAST_FWD1(obj);                                                 \
+    constexpr decltype(auto) mvisit(size_constant<_i_>, T&& obj, auto&& fun) noexcept {            \
+        auto&& [__VA_ARGS__] = KON_QI_FFWD1(obj);                                                  \
         return fun(KON_CALL_EACH##_i_(FWD_BINDING_T, __VA_ARGS__));                                \
     }
 
@@ -116,7 +115,7 @@ struct struct_information {
 template <std::size_t N, typename T>
 consteval struct_information<N> make_struct_information() noexcept {
     struct_information<N> info;
-    detail::mvisit_as_nttp<CODECL<T>>(kon::size_constant<N>{}, [&info]<auto... Ms>() {
+    detail::mvisit_as_nttp<CODECL<T>>(size_constant<N>{}, [&info]<auto... Ms>() {
         std::string_view names[N] = {detail::member_name<Ms>()...};
         for (std::size_t i{}; i < N; i++) {
             info.m_names[i] = names[i];
@@ -134,7 +133,7 @@ consteval struct_information<N> make_struct_information() noexcept {
         }
     };
 
-    detail::mvisit_as_nttp<CODECL<U>.t>(kon::size_constant<N>{}, [&info]<auto... Ms>() {
+    detail::mvisit_as_nttp<CODECL<U>.t>(size_constant<N>{}, [&info]<auto... Ms>() {
         const unsigned char* init = CODECL<U>.buffer;
         const void* targets[N] = {Ms...};
         std::size_t msizes[N] = {sizeof(*Ms)...};
@@ -153,7 +152,42 @@ consteval struct_information<N> make_struct_information() noexcept {
 
 template <typename T>
 struct s_reflect {
-    static constexpr std::size_t sm_size = member_count<T>();
+    using type = T;
+
+    static consteval auto addon() noexcept {
+        if constexpr (requires() { typename T::template addon_register<>; }) {
+            return typename T::template addon_register<>{};
+        } else if constexpr (requires() { typename addon_register<T>::addon_host_type; }) {
+            return addon_register<T>{};
+        } else {
+            return addon_register<void>{};
+        }
+    }
+
+    using addon_type = decltype(addon());
+
+    static consteval auto member_count_select() noexcept {
+        if constexpr (requires() { addon_type::count_range; }) {
+            using cr_type = std::remove_reference_t<decltype(addon_type::count_range)>;
+            static_assert(std::rank_v<cr_type> == 1);
+            static_assert(std::extent_v<cr_type, 0> == 2);
+            constexpr auto cr_min = addon_type::count_range[0];
+            constexpr auto cr_max = addon_type::count_range[1];
+            static_assert(cr_min <= cr_max && cr_min >= 0);
+            return member_count<T, cr_min, cr_max + 1>();
+        } else {
+            return member_count<T>();
+        }
+    }
+
+    static constexpr std::size_t sm_size = member_count_select();
+
+    // Member addresses.
+    static constexpr auto sm_maddrs =
+        detail::mvisit_as_nttp<CODECL<T>>(size_constant<sm_size>{}, []<auto... Vs>() {
+            return kon::qi::value_pack<Vs...>{};
+        });
+    // TODO: Generate information from sm_maddrs.
     static constexpr auto sm_info = make_struct_information<sm_size, T>();
 
     static consteval std::size_t size() noexcept {
@@ -180,17 +214,21 @@ struct s_reflect {
 
     template <std::size_t I>
     static constexpr auto&& member_get(auto&& obj) noexcept {
-        return detail::mvisit(
-            size_constant<sm_size>{}, KON_FAST_FWD1(obj), kon::value_pack_element<I>);
+        return detail::mvisit(size_constant<sm_size>{}, KON_QI_FFWD1(obj), value_pack_element<I>);
     }
 
     template <std::size_t I>
-    using member_type = std::remove_cvref_t<decltype(member_get<I>(std::declval<T>()))>;
+    using member_type = std::remove_cvref_t<decltype(*sm_maddrs.template get<I>())>;
 
     static void foreach(auto&& fun) {
-        [&]<auto... Is>(kon::index_sequence<Is...>) {
-            (KON_FAST_FWD1(fun).template operator()<Is>(), ...);
-        }(kon::make_index_sequence<sm_size>{});
+        [&]<auto... Is>(index_sequence<Is...>) {
+            (KON_QI_FFWD1(fun).template operator()<Is>(), ...);
+        }(make_index_sequence<sm_size>{});
+    }
+
+    template <std::size_t I>
+    static consteval auto addon_tag() noexcept {
+        return kon::qi::addon_tag<sm_maddrs.template get<I>()>{};
     }
 };
 

@@ -4,18 +4,20 @@
 
 #ifndef ENUM_6D7EAEC9_15FB_46FD_8465_783CB02DD621
 #define ENUM_6D7EAEC9_15FB_46FD_8465_783CB02DD621
-#include <kon/qi/utility.hpp>
 #include <kon/qi/name.hpp>
+#include <kon/qi/addon.hpp>
 
 namespace kon {
 //
 namespace qi {
 template <std::size_t N, typename ET>
 struct enum_information {
-    std::size_t m_size{};
+    using utype = std::underlying_type_t<ET>;
+
+    std::size_t m_size;
     bool m_is_continuous;
-    ET m_values[N];
-    ET m_min, m_max;
+    utype m_values[N];
+    utype m_min, m_max;
     std::string_view m_names[N];
     std::string_view m_pretty_prefix;
 
@@ -38,57 +40,124 @@ struct enum_information {
     }
 };
 
-template <typename ET, std::size_t N, int MinEv, int MaxEv>
-consteval enum_information<N, ET> make_enum_information_impl() noexcept {
-    enum_information<N, ET> enum_infos{};
-    [&enum_infos]<auto... Ns>(kon::index_sequence<Ns...>) {
-        constexpr std::string_view pnames[] = {
-            qi::pretty_value_name<static_cast<ET>(MinEv + Ns)>()...};
-        bool is_continuous{true};
-        std::size_t prev = N;
-        std::string_view prefix{};
-        std::size_t size{};
-        for (std::size_t i{}; i < N; i++) {
+constexpr int default_enum_value_range[1][2] = {
+    {-128, 127}
+};
+
+template <auto& ValueRanges, std::size_t VRN>
+consteval std::size_t enum_total_space() noexcept {
+    std::size_t space{};
+    for (std::size_t i{}; i < VRN; i++) {
+        if (ValueRanges[i][1] < ValueRanges[i][0]) {
+            return 0;
+        }
+        space += (ValueRanges[i][1] - ValueRanges[i][0]) + 1;
+    }
+    return space;
+}
+
+template <typename ET, auto MinEv, auto MaxEv>
+struct enum_information_maker {
+    static constexpr std::size_t space = MaxEv - MinEv + 1;
+
+    template <auto... Ns>
+    static consteval void
+        make_impl(auto& enum_info, std::string_view& prefix, index_sequence<Ns...>) {
+        constexpr std::string_view pnames[] = {pretty_value_name<static_cast<ET>(MinEv + Ns)>()...};
+
+        std::size_t size = enum_info.m_size;
+        for (std::size_t i{}; i < space; i++) {
             std::string_view name = pnames[i];
             if (!name.starts_with('(')) {
                 if (size == 0) {
                     prefix = pretty_name_prefix(name);
-                    enum_infos.m_pretty_prefix = prefix;
                 }
                 name.remove_prefix(prefix.size());
-                if ((prev != N) && (prev + 1 != i)) {
-                    is_continuous = false;
-                }
-                prev = i;
-                enum_infos.m_values[size] = static_cast<ET>(MinEv + i);
-                enum_infos.m_names[size] = name;
+                enum_info.m_values[size] = MinEv + i;
+                enum_info.m_names[size] = name;
                 size++;
             }
         }
+        enum_info.m_size = size;
+    }
+
+    static consteval void make(auto& enum_infos, std::string_view& prefix) {
+        make_impl(enum_infos, prefix, make_index_sequence<space>{});
+    }
+};
+
+template <typename ET, std::size_t TotalSpace, auto& ValueRanges, std::size_t VRN>
+consteval enum_information<TotalSpace, ET> make_enum_information_impl() noexcept {
+    enum_information<TotalSpace, ET> enum_info{};
+
+    [&enum_info]<auto... Is>(index_sequence<Is...>) {
+        std::string_view prefix{};
+        (enum_information_maker<ET, ValueRanges[Is][0], ValueRanges[Is][1]>::make(enum_info, prefix),
+         ...);
+        std::size_t size = enum_info.m_size;
         if (size > 0) {
-            enum_infos.m_size = size;
-            enum_infos.m_min = enum_infos.m_values[0];
-            enum_infos.m_max = enum_infos.m_values[enum_infos.m_size - 1];
+            enum_info.m_min = enum_info.m_values[0];
+            enum_info.m_max = enum_info.m_values[size - 1];
+            if constexpr (VRN == 1) {
+                bool is_continuous = true;
+                auto prev = enum_info.m_values[0];
+                auto cur = prev;
+                for (std::size_t i{1}; i < size; i++) {
+                    cur = enum_info.m_values[i];
+                    if (prev + 1 != cur) {
+                        is_continuous = false;
+                        break;
+                    }
+                    prev = cur;
+                }
+                enum_info.m_is_continuous = is_continuous;
+            }
         }
-        enum_infos.m_is_continuous = is_continuous;
-    }(kon::make_index_sequence<N>());
-    return enum_infos;
+        enum_info.m_pretty_prefix = prefix;
+    }(make_index_sequence<VRN>{});
+    return enum_info;
 }
 
-template <typename ET, int MinEv, int MaxEv>
+template <typename ET, auto& ValueRanges>
 consteval auto make_enum_infomation() noexcept {
-    constexpr std::size_t N = MaxEv - MinEv + 1;
-    constexpr enum_information<N, ET> enum_infos =
-        make_enum_information_impl<ET, N, MinEv, MaxEv>();
+    using vr_type = std::remove_reference_t<decltype(ValueRanges)>;
+    static_assert(std::rank_v<vr_type> == 2);
+    static_assert(std::extent_v<vr_type, 1> == 2);
+    constexpr std::size_t vrn = std::extent_v<vr_type, 0>;
+    static_assert(vrn > 0);
+
+    constexpr std::size_t space = enum_total_space<ValueRanges, vrn>();
+    static_assert(space > 0, "The value_range must be in ascending order and non-overlapping.");
+
+    constexpr enum_information<space, ET> enum_infos =
+        make_enum_information_impl<ET, space, ValueRanges, vrn>();
     return enum_infos.template shrink<enum_infos.m_size>();
 }
 
-template <typename ET, int MinEv = -128, int MaxEv = 127>
+template <typename ET>
 struct e_reflect {
-    using underlying_type = std::underlying_type_t<ET>;
+    static consteval auto addon() noexcept {
+        if constexpr (requires() { typename addon_register<ET>::addon_host_type; }) {
+            return addon_register<ET>{};
+        } else {
+            return addon_register<void>{};
+        }
+    }
+
+    using addon_type = decltype(addon());
+
+    using utype = std::underlying_type_t<ET>;
     using type = ET;
 
-    static constexpr auto sm_info = make_enum_infomation<ET, MinEv, MaxEv>();
+    static consteval auto enum_information_select() noexcept {
+        if constexpr (requires() { addon_type::value_range; }) {
+            return make_enum_infomation<ET, addon_type::value_range>();
+        } else {
+            return make_enum_infomation<ET, default_enum_value_range>();
+        }
+    }
+
+    static constexpr auto sm_info = enum_information_select();
 
     static consteval bool is_continuous() noexcept {
         return sm_info.m_is_continuous;
@@ -99,11 +168,11 @@ struct e_reflect {
     }
 
     static consteval ET min() noexcept {
-        return sm_info.m_min;
+        return static_cast<ET>(sm_info.m_min);
     }
 
     static consteval ET max() noexcept {
-        return sm_info.m_max;
+        return static_cast<ET>(sm_info.m_max);
     }
 
     static consteval std::string_view pretty_name_prefix() noexcept {
@@ -111,10 +180,10 @@ struct e_reflect {
     }
 
     static constexpr std::string_view to_name(ET value, std::string_view invalid = {}) noexcept {
-        underlying_type uv = static_cast<underlying_type>(value);
+        utype uv = static_cast<utype>(value);
         if constexpr (is_continuous()) {
-            constexpr underlying_type min_uv = static_cast<underlying_type>(min());
-            if ((min_uv <= uv) && (uv <= static_cast<underlying_type>(max()))) [[likely]] {
+            constexpr utype min_uv = sm_info.m_min;
+            if ((min_uv <= uv) && (uv <= sm_info.m_max)) [[likely]] {
                 return sm_info.m_names[uv - min_uv];
             }
         } else {
@@ -122,7 +191,7 @@ struct e_reflect {
             std::size_t end = size();
             while (start < end) {
                 std::size_t m = (start + end) >> 1;
-                underlying_type muv = static_cast<underlying_type>(sm_info.m_values[m]);
+                utype muv = sm_info.m_values[m];
                 if (muv == uv) {
                     return sm_info.m_names[m];
                 }
@@ -137,7 +206,7 @@ struct e_reflect {
     }
 
     static constexpr std::size_t to_rank(std::string_view name) noexcept {
-        const auto &names = sm_info.m_names;
+        const auto& names = sm_info.m_names;
         constexpr std::size_t size = sm_info.m_size;
         for (std::size_t i{}; i < size; i++) {
             if (names[i] == name) {
@@ -148,7 +217,12 @@ struct e_reflect {
     }
 
     static constexpr ET to_value_from_rank(std::size_t rank) noexcept {
-        return sm_info.m_values[rank];
+        return static_cast<ET>(sm_info.m_values[rank]);
+    }
+
+    template <ET e>
+    static consteval auto addon_tag() noexcept {
+        return kon::qi::addon_tag<e>{};
     }
 };
 } // namespace qi
