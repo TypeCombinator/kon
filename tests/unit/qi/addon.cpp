@@ -104,6 +104,9 @@ template <>
 struct addon_register<qi_addon_test::e_foo> {
     using addon_host_type = qi_addon_test::e_foo;
     KON_QI_ADDON_INIT();
+    static constexpr int value_range[][2] = {
+        {0, 10}
+    };
     KON_QI_ADDON_E(a, 0, nullptr);
     KON_QI_ADDON_E(b, 'X');
     KON_QI_ADDON_E(c);
@@ -112,18 +115,23 @@ struct addon_register<qi_addon_test::e_foo> {
 } // namespace kon::qi
 
 namespace qi_addon_test {
+template <typename Addon>
+concept has_enum_value_range = requires() { Addon::value_range; };
+
 consteval bool test_enum_addon() noexcept {
     using minfo = kon::qi::e_reflect<e_foo>;
     using addon = minfo::addon_type;
 
+    static_assert(has_enum_value_range<addon>);
+
     constexpr auto m0_addon = addon::get_m(minfo::addon_tag<e_foo::a>());
     static_assert(m0_addon.size() == 2);
-    static_assert(m0_addon.template get<0>() == 0);
-    static_assert(m0_addon.template get<1>() == nullptr);
+    static_assert(m0_addon.get<0>() == 0);
+    static_assert(m0_addon.get<1>() == nullptr);
 
     constexpr auto m1_addon = addon::get_m(minfo::addon_tag<e_foo::b>());
     static_assert(m1_addon.size() == 1);
-    static_assert(m1_addon.template get<0>() == 'X');
+    static_assert(m1_addon.get<0>() == 'X');
 
     constexpr auto m2_addon = addon::get_m(minfo::addon_tag<e_foo::c>());
     static_assert(m2_addon.size() == 0);
