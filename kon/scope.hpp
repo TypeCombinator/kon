@@ -45,8 +45,7 @@ class [[nodiscard]] scope_exit {
     }
 
    private:
-    [[no_unique_address]]
-    EF exit_function;
+    KON_ATTR_NO_UNIQUE_ADDRESS EF exit_function;
     bool engaged = true;
 };
 
