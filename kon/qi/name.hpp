@@ -42,11 +42,11 @@ struct value_guider {
 
 template <typename T>
 consteval std::string_view pretty_type_name() noexcept {
-    constexpr std::string_view n{fun_str<T>()};
+    std::string_view n{fun_str<T>()};
 #if defined(_MSC_VER) && not defined(__clang__)
-    constexpr std::string_view n1{n.data() + type_guider::offset, n.size() - type_guider::garbage};
-    constexpr std::string_view n2 = n1.substr(0, 7);
-    constexpr std::size_t sp = n2.find(' ');
+    std::string_view n1{n.data() + type_guider::offset, n.size() - type_guider::garbage};
+    std::string_view n2 = n1.substr(0, 7);
+    std::size_t sp = n2.find(' ');
     if ((sp != std::string_view::npos) && (n1[sp + 1] != '*')) {
         return std::string_view{
             n1.data() + (sp + 1),
@@ -61,7 +61,7 @@ consteval std::string_view pretty_type_name() noexcept {
 
 template <auto T>
 consteval std::string_view pretty_value_name() noexcept {
-    constexpr std::string_view n{fun_str_nttp<T>()};
+    std::string_view n{fun_str_nttp<T>()};
     return {n.data() + value_guider::offset, n.size() - value_guider::garbage};
 }
 

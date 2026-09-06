@@ -171,8 +171,8 @@ struct s_reflect {
             using cr_type = std::remove_reference_t<decltype(addon_type::count_range)>;
             static_assert(std::rank_v<cr_type> == 1);
             static_assert(std::extent_v<cr_type, 0> == 2);
-            constexpr auto cr_min = addon_type::count_range[0];
-            constexpr auto cr_max = addon_type::count_range[1];
+            constexpr std::size_t cr_min = addon_type::count_range[0];
+            constexpr std::size_t cr_max = addon_type::count_range[1];
             static_assert(cr_min <= cr_max && cr_min >= 0);
             return member_count<T, cr_min, cr_max + 1>();
         } else {
