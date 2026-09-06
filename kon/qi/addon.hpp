@@ -6,6 +6,7 @@
 #define ADDON_1A34AF33_3863_4910_984C_743C4E4BD1CD
 #include <kon/qi/pack.hpp>
 
+// TODO: It may be better to declare a function without defining it.
 #define KON_QI_ADDON_M(_m_, ...)                                                                   \
     static consteval auto of(kon::qi::addon_tag<&(CODECL<addon_host_type>._m_)>) noexcept {        \
         return kon::qi::value_pack<__VA_ARGS__>{};                                                 \

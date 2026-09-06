@@ -154,6 +154,8 @@ template <typename T>
 struct s_reflect {
     using type = T;
 
+    // TODO: Remove this help function, This doesn't apply to types that can't be evaluated at
+    // compile time.
     static consteval auto addon() noexcept {
         if constexpr (requires() { typename T::template addon_register<>; }) {
             return typename T::template addon_register<>{};
