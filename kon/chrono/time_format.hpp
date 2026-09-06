@@ -64,7 +64,7 @@ static inline std::string_view
         *buffer++ = '-';
         std::memcpy(buffer, &kon::detail::base10_encode_lut[ymd.day * 2], 2);
         buffer += 2;
-        *buffer++ = ' ';
+        *buffer++ = 'T';
 
         ctx.date_end = static_cast<uint8_t>(buffer - ctx.buffer);
         ctx.days = days;
