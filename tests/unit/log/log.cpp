@@ -1,4 +1,5 @@
 #include <kon/log/log_sink_circular_buffer.hpp>
+#include <kon/log/log.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
 
@@ -152,4 +153,46 @@ TEST_CASE("read_slice of tail_space", "[log_sink_cirular_buffer]") {
             }
         }
     }
+}
+
+#define TEST_LOG_TRC(_log_, _fmt_, ...)                                                            \
+    KON_LOG_PRINT_FLEVEL(_log_, "TRC", kon::log_level::trace, _fmt_, ##__VA_ARGS__)
+
+#define TEST_LOG_DBG(_log_, _fmt_, ...)                                                            \
+    KON_LOG_PRINT_FLEVEL(_log_, "DBG", kon::log_level::debug, _fmt_, ##__VA_ARGS__)
+
+#define TEST_LOG_INF(_log_, _fmt_, ...)                                                            \
+    KON_LOG_PRINT_FLEVEL(_log_, "INF", kon::log_level::information, _fmt_, ##__VA_ARGS__)
+
+#define TEST_LOG_WAR(_log_, _fmt_, ...)                                                            \
+    KON_LOG_PRINT_FLEVEL(_log_, "WAR", kon::log_level::warning, _fmt_, ##__VA_ARGS__)
+
+#define TEST_LOG_ERR(_log_, _fmt_, ...)                                                            \
+    KON_LOG_PRINT_FLEVEL(_log_, "ERR", kon::log_level::error, _fmt_, ##__VA_ARGS__)
+
+#define TEST_LOG_CRT(_log_, _fmt_, ...)                                                            \
+    KON_LOG_PRINT_FLEVEL(_log_, "CRT", kon::log_level::critical, _fmt_, ##__VA_ARGS__)
+
+TEST_CASE("log", "[log_sink_cirular_buffer]") {
+    kon::log_sink_circular_buffer sink;
+    sink.initialize(1024);
+    kon::logger log;
+    log.set_sink(sink.sink_if, &sink);
+    log.set_level(kon::log_level::information);
+    TEST_LOG_ERR(log, "hello");
+    TEST_LOG_DBG(log, "world");
+
+    kon::log_sink_circular_buffer::tail_space space;
+    sink.get_tail(512, space);
+    REQUIRE(space.m_total_size != 0);
+    REQUIRE(space.m_total_size == space.m_first_part_size);
+
+    std::string_view content{
+        reinterpret_cast<const char *>(space.m_first_part), space.m_first_part_size};
+    REQUIRE(content.find("hello") != std::string_view::npos);
+    REQUIRE(content.find("world") == std::string_view::npos);
+
+    sink.reset();
+    sink.get_tail(512, space);
+    REQUIRE(space.m_total_size == 0);
 }

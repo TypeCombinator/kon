@@ -17,8 +17,8 @@
     do {                                                                                           \
         struct timespec __ts;                                                                      \
         ::clock_gettime(CLOCK_REALTIME, &__ts);                                                    \
-        std::string_view __ymd_hms = kon::seconds_to_ymd_hms_string(                               \
-            kon::logger::ymd_hms_context, __ts.tv_sec + kon::timebase::m_gmt_offset);              \
+        std::string_view __ymd_hms = kon::logger::ymd_hms_context.seconds_to_ymd_hms_string(       \
+            __ts.tv_sec + kon::timebase::m_gmt_offset);                                            \
         (_logger_).print(                                                                          \
             "{}.{} " _level_str_ "@{} {}(" KON_STRINGIFY(__LINE__) "): " _fmt_ "\n",               \
             __ymd_hms,                                                                             \

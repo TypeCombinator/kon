@@ -11,7 +11,7 @@ static std::string std_seconds_to_date_time_string(int64_t seconds) {
         std::chrono::hh_mm_ss<std::chrono::seconds>{tp - days};
 
     return std::format(
-        "{}-{:02}-{:02} {:02}:{:02}:{:02}",
+        "{}-{:02}-{:02}T{:02}:{:02}:{:02}",
         static_cast<int>(ymd.year()),
         static_cast<unsigned>(ymd.month()),
         static_cast<unsigned>(ymd.day()),
@@ -25,12 +25,13 @@ TEST_CASE("basic", "[time_format]") {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<std::int64_t> dist(-30000ll * 365 * 86400, 30000ll * 365 * 86400);
     kon::ymd_hms_format_context ctx{};
-    REQUIRE(ctx.seconds == std::numeric_limits<std::int64_t>::min());
-    REQUIRE(ctx.days == std::numeric_limits<std::int32_t>::min());
+    REQUIRE(ctx.m_date_end == 0);
+    REQUIRE(ctx.m_seconds == std::numeric_limits<std::int64_t>::min());
+    REQUIRE(ctx.m_days == std::numeric_limits<std::int32_t>::min());
     for (std::uint32_t i{}; i < 100; i++) {
         std::int64_t seconds = dist(gen);
         std::string std_result = std_seconds_to_date_time_string(seconds);
-        std::string_view result = kon::seconds_to_ymd_hms_string(ctx, seconds);
+        std::string_view result = ctx.seconds_to_ymd_hms_string(seconds);
         REQUIRE(std_result == result);
     }
 }
