@@ -47,6 +47,7 @@ constexpr int default_enum_value_range[1][2] = {
 template <auto& ValueRanges, std::size_t VRN>
 consteval std::size_t enum_total_space() noexcept {
     std::size_t space{};
+    // TODO: Detect overlaps.
     for (std::size_t i{}; i < VRN; i++) {
         if (ValueRanges[i][1] < ValueRanges[i][0]) {
             return 0;
@@ -62,7 +63,7 @@ struct enum_information_maker {
 
     template <auto... Ns>
     static consteval void
-        make_impl(auto& enum_info, std::string_view& prefix, index_sequence<Ns...>) {
+        make_impl(auto& enum_info, std::string_view& prefix, index_sequence<Ns...>) noexcept {
         constexpr std::string_view pnames[] = {pretty_value_name<static_cast<ET>(MinEv + Ns)>()...};
 
         std::size_t size = enum_info.m_size;
@@ -81,7 +82,7 @@ struct enum_information_maker {
         enum_info.m_size = size;
     }
 
-    static consteval void make(auto& enum_infos, std::string_view& prefix) {
+    static consteval void make(auto& enum_infos, std::string_view& prefix) noexcept {
         make_impl(enum_infos, prefix, make_index_sequence<space>{});
     }
 };
@@ -206,7 +207,7 @@ struct e_reflect {
     }
 
     static constexpr std::size_t to_rank(std::string_view name) noexcept {
-        const auto& names = sm_info.m_names;
+        const std::string_view* names = sm_info.m_names;
         constexpr std::size_t size = sm_info.m_size;
         for (std::size_t i{}; i < size; i++) {
             if (names[i] == name) {
