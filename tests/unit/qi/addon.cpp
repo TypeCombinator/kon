@@ -51,19 +51,19 @@ consteval bool test_struct_addon() noexcept {
     using minfo = kon::qi::s_reflect<T>;
     using addon = minfo::addon_type;
 
-    constexpr auto m0_addon = addon::get_m(minfo::template addon_tag<0>());
+    constexpr auto m0_addon = addon::of(minfo::template addon_tag<0>());
     static_assert(m0_addon.size() == 2);
     static_assert(m0_addon.template get<0>() == 0);
     static_assert(m0_addon.template get<1>() == nullptr);
 
-    constexpr auto m1_addon = addon::get_m(minfo::template addon_tag<1>());
+    constexpr auto m1_addon = addon::of(minfo::template addon_tag<1>());
     static_assert(m1_addon.size() == 1);
     static_assert(m1_addon.template get<0>() == V);
 
-    constexpr auto m2_addon = addon::get_m(minfo::template addon_tag<2>());
+    constexpr auto m2_addon = addon::of(minfo::template addon_tag<2>());
     static_assert(m2_addon.size() == 0);
 
-    constexpr auto m3_addon = addon::get_m(minfo::template addon_tag<3>());
+    constexpr auto m3_addon = addon::of(minfo::template addon_tag<3>());
     static_assert(m2_addon.size() == 0);
     return true;
 }
@@ -139,19 +139,19 @@ consteval bool test_enum_addon() noexcept {
 
     static_assert(has_enum_value_range<addon>);
 
-    constexpr auto m0_addon = addon::get_m(minfo::addon_tag<e_foo::a>());
+    constexpr auto m0_addon = addon::of(minfo::addon_tag<e_foo::a>());
     static_assert(m0_addon.size() == 2);
     static_assert(m0_addon.get<0>() == 0);
     static_assert(m0_addon.get<1>() == nullptr);
 
-    constexpr auto m1_addon = addon::get_m(minfo::addon_tag<e_foo::b>());
+    constexpr auto m1_addon = addon::of(minfo::addon_tag<e_foo::b>());
     static_assert(m1_addon.size() == 1);
     static_assert(m1_addon.get<0>() == 'X');
 
-    constexpr auto m2_addon = addon::get_m(minfo::addon_tag<e_foo::c>());
+    constexpr auto m2_addon = addon::of(minfo::addon_tag<e_foo::c>());
     static_assert(m2_addon.size() == 0);
 
-    constexpr auto m3_addon = addon::get_m(minfo::addon_tag<e_foo::d>());
+    constexpr auto m3_addon = addon::of(minfo::addon_tag<e_foo::d>());
     static_assert(m2_addon.size() == 0);
     return true;
 }
